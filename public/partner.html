@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EPC Partner Panel - Secure Registration</title>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+    body { background: #f4f6f9; color: #333; min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 70px; }
+    
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 20px; background-color: #1a252f; color: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .logo { width: 38px; height: 38px; background: #ffc107; color: #000; font-weight: 800; display: flex; align-items: center; justify-content: center; border-radius: 8px; }
+    
+    .header-right-actions { display: flex; align-items: center; gap: 10px; }
+    .header-nav-btn { background: #ffc107; color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 4px; }
+    .header-nav-btn:hover { background: #e0a800; }
+
+    .container { max-width: 900px; margin: 15px auto; padding: 0 15px; width: 100%; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 20px; }
+    
+    .input-group { margin-bottom: 14px; }
+    .input-group label { display: block; margin-bottom: 5px; font-size: 13px; font-weight: 600; color: #444; }
+    .input-group input, .input-group select, .input-group textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px;
+    }
+    .action-btn {
+      width: 100%; padding: 12px; background: #198754; color: white; border: none;
+      border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; margin-top: 10px;
+    }
+    .verify-box { display: flex; gap: 8px; align-items: flex-end; }
+    .verify-btn { padding: 10px 14px; background: #0d6efd; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; white-space: nowrap; }
+    .success-badge { background: #d1e7dd; color: #0f5132; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; margin-top: 4px; }
+    
+    .job-card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; background: #fafafa; margin-bottom: 15px; position: relative; }
+    .rating-summary-card {
+      background: #fff8e6; border: 1px solid #ffc107; padding: 12px; border-radius: 8px; margin-bottom: 15px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; height: 60px;
+      background: #ffffff; border-top: 1px solid #ddd;
+      display: flex; justify-around: align-items: center; z-index: 1000;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-size: 11px; color: #666; cursor: pointer; width: 20%; text-decoration: none;
+    }
+    .nav-item.active { color: #0d6efd; font-weight: bold; }
+    .nav-item span { font-size: 18px; margin-bottom: 2px; }
+
+    .duty-card {
+      background: #eef2ff; border: 1px solid #6366f1; border-radius: 10px;
+      padding: 14px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+    .metric-card { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; }
+    .metric-title { font-size: 12px; color: #6c757d; margin-bottom: 4px; }
+    .metric-val { font-size: 18px; font-weight: bold; color: #212529; }
+    .list-menu-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; cursor: pointer; font-size: 14px; font-weight: 500; }
+    .sub-tabs { display: flex; gap: 8px; border-bottom: 2px solid #eee; margin-bottom: 15px; overflow-x: auto; }
+    .sub-tab { padding: 8px 12px; font-size: 13px; font-weight: bold; color: #666; cursor: pointer; white-space: nowrap; }
+    .sub-tab.active { color: #0d6efd; border-bottom: 2px solid #0d6efd; }
+
+    .doc-preview { width: 100%; max-height: 120px; object-fit: contain; margin-top: 5px; border: 1px dashed #ccc; border-radius: 6px; padding: 4px; display: none; }
+    .id-badge { background: #0d6efd; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+    .designation-badge { background: #ffc107; color: #000; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+
+    .chat-box { background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; padding: 10px; margin-top: 10px; }
+    .chat-messages { max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; font-size: 12px; }
+    .chat-msg { background: #e9ecef; padding: 6px 10px; border-radius: 6px; width: fit-content; max-width: 80%; }
+    .chat-msg.self { background: #d1e7dd; align-self: flex-end; }
+    .sub-card { border: 1px solid #ffc107; background: #fffdf5; padding: 12px; border-radius: 8px; margin-bottom: 10px; }
+
+    /* Vertical Image Carousel Styles */
+    .vertical-slider-container {
+      width: 100%; height: 260px; overflow: hidden; position: relative;
+      border-radius: 10px; border: 1px solid #e0e0e0; margin-bottom: 20px;
+      background: #111;
+    }
+    .vertical-slider-track {
+      display: flex; flex-direction: column; gap: 10px;
+      animation: verticalScroll 12s linear infinite;
+    }
+    .vertical-slider-track:hover { animation-play-state: paused; }
+    .slide-item {
+      position: relative; width: 100%; height: 120px; flex-shrink: 0;
+      border-radius: 8px; overflow: hidden;
+    }
+    .slide-item img {
+      width: 100%; height: 100%; object-fit: cover; opacity: 0.85;
+    }
+    .slide-label {
+      position: absolute; bottom: 8px; left: 12px;
+      background: rgba(0,0,0,0.75); color: #ffc107;
+      padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: bold;
+    }
+
+    @keyframes verticalScroll {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-50%); }
+    }
+
+    .forgot-link {
+      font-size: 12px; color: #0d6efd; text-decoration: none; cursor: pointer;
+      display: inline-block; margin-top: 8px; font-weight: 600;
+    }
+
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000;
+    }
+
+    .modal-content {
+      background: #ffffff; padding: 25px; border-radius: 10px; width: 90%; max-width: 400px;
+      position: relative; box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .close-btn {
+      position: absolute; top: 12px; right: 15px; font-size: 22px; cursor: pointer; color: #666;
+    }
+
+    .btn-submit {
+      width: 100%; background-color: #15803d; color: #fff; padding: 12px;
+      border: none; border-radius: 6px; margin-top: 15px; font-weight: bold; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand" onclick="showHomePage()">
+      <div class="logo">EPC</div>
+      <div>
+        <div style="font-size: 16px; font-weight: bold;">EPC Partner Panel</div>
+        <div style="font-size: 11px; color: #ffc107;">Dedicated Service Module</div>
+      </div>
+    </div>
+    <div class="header-right-actions">
+      <span id="partnerNameDisplay" style="display:none; font-size:12px; font-weight:bold; color:#ffc107;"></span>
+      <span id="partnerRatingDisplay" style="display:none; font-size:11px; background:#ffc107; color:#000; padding:2px 6px; border-radius:4px; font-weight:bold;"></span>
+      <button id="registerPageBtn" class="header-nav-btn" style="background:#10b981; color:white;" onclick="openRegisterPage()">📝 Partner Register</button>
+      <button id="headerAuthBtn" class="header-nav-btn" onclick="openLoginModal()">🔑 Partner Sign In</button>
+      <button id="logoutBtn" class="header-nav-btn" style="display:none; background:#dc3545; color:white;" onclick="logoutPartner()">Logout</button>
+    </div>
+  </header>
+
+  <!-- Login Modal Popup -->
+  <div id="loginModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeLoginModal()">&times;</span>
+      <h3 style="margin-bottom:15px; color:#1a252f;">Partner Sign In</h3>
+      <div class="input-group">
+        <label>Partner ID / Mobile Number / Gmail ID</label>
+        <input type="text" id="modalPartnerId" placeholder="Enter ID (e.g. PRT-1234), Mobile or Gmail">
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="modalPassword" placeholder="Enter password">
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: -5px;">
+        <span class="forgot-link" onclick="openForgotCredentialsModal('user_id')">Forgot User ID?</span>
+        <span class="forgot-link" onclick="openForgotCredentialsModal('password')">Forgot Password?</span>
+      </div>
+      <button type="button" class="btn-submit" onclick="handleModalLogin()">Login to Dashboard</button>
+    </div>
+  </div>
+
+  <!-- CONVERTED SECURE REGISTRATION MODAL OVERLAY -->
+  <div id="registerSection" class="modal-overlay" style="display:none;">
+    <div class="modal-content" style="max-width: 600px; max-height: 85vh; overflow-y: auto;">
+      <span class="close-btn" onclick="showHomePage()">&times;</span>
+      <div style="margin-bottom:20px; border-bottom:2px solid #f1f3f5; padding-bottom:12px;">
+        <h2 style="color: #1a252f;">🛡️ Secure Partner Onboarding</h2>
+        <p style="font-size:12px; color:#666; margin-top:2px;">Complete verification & document uploads to join as a partner.</p>
+      </div>
+      
+      <div class="input-group">
+        <label>Full Name *</label>
+        <input type="text" id="regName" placeholder="Enter full name">
+      </div>
+
+      <div class="input-group">
+        <label>Primary Mobile Number *</label>
+        <input type="tel" id="regMobile" placeholder="10-digit mobile number" maxlength="10">
+      </div>
+
+      <div class="input-group">
+        <label>Partner Designation / Profession *</label>
+        <select id="regDesignation">
+          <option value="Electrician">Electrician</option>
+          <option value="Plumber">Plumber</option>
+          <option value="Carpenter">Carpenter</option>
+          <option value="AC Technician">AC Technician</option>
+          <option value="Painter">Painter</option>
+          <option value="Home Appliance Repair">Home Appliance Repair</option>
+          <option value="Cleaning Specialist">Cleaning Specialist</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Work Experience Level *</label>
+        <select id="regExperience">
+          <option value="Fresher (0-1 Years)">Fresher (0-1 Years)</option>
+          <option value="1 - 3 Years">1 - 3 Years</option>
+          <option value="3 - 5 Years">3 - 5 Years</option>
+          <option value="5+ Years Expert">5+ Years Expert</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Father Name</label>
+        <input type="text" id="regFatherName" placeholder="Enter father name">
+      </div>
+
+      <div class="input-group">
+        <label>Date of Birth (DOB)</label>
+        <input type="date" id="regDob">
+      </div>
+
+      <div class="input-group">
+        <label>Permanent Address</label>
+        <input type="text" id="regPermAddress" placeholder="Door No, Street, District">
+      </div>
+
+      <div class="input-group">
+        <label>Current Working Address</label>
+        <input type="text" id="regCurrAddress" placeholder="Current stay in Kanchipuram">
+      </div>
+
+      <div class="input-group">
+        <label>Emergency Contact Number</label>
+        <input type="tel" id="regEmergency" placeholder="10-digit emergency number" maxlength="10">
+      </div>
+
+      <h4 style="margin: 20px 0 12px 0; color:#0d6efd; border-top:1px solid #eee; padding-top:12px;">📷 Documents & Profile Uploads</h4>
+      
+      <div class="input-group">
+        <label>Profile Photo Upload *</label>
+        <input type="file" id="regPhotoFile" accept="image/*" onchange="previewDocument(this, 'photoPreview')">
+        <img id="photoPreview" class="doc-preview">
+      </div>
+
+      <div class="input-group">
+        <label>Aadhaar Card Number *</label>
+        <div class="verify-box">
+          <input type="password" id="regAadhaar" placeholder="12-digit Aadhaar number" maxlength="12">
+          <button class="verify-btn" onclick="verifyAadhaar()">Verify Aadhaar</button>
+        </div>
+        <div id="aadhaarStatus"></div>
+        <label style="margin-top:8px;">Upload Aadhaar Copy *</label>
+        <input type="file" id="regAadhaarFile" accept="image/*,application/pdf" onchange="previewDocument(this, 'aadhaarPreview')">
+        <img id="aadhaarPreview" class="doc-preview">
+      </div>
+
+      <div class="input-group">
+        <label>PAN Card Number *</label>
+        <div class="verify-box">
+          <input type="text" id="regPan" placeholder="10-digit PAN (e.g., ABCDE1234F)" maxlength="10">
+          <button class="verify-btn" onclick="verifyPan()">Verify PAN</button>
+        </div>
+        <div id="panStatus"></div>
+        <label style="margin-top:8px;">Upload PAN Card Copy *</label>
+        <input type="file" id="regPanFile" accept="image/*,application/pdf" onchange="previewDocument(this, 'panPreview')">
+        <img id="panPreview" class="doc-preview">
+      </div>
+
+      <div class="input-group">
+        <label>Upload Bank Passbook / Cancelled Cheque *</label>
+        <input type="file" id="regBankFile" accept="image/*,application/pdf" onchange="previewDocument(this, 'bankPreview')">
+        <img id="bankPreview" class="doc-preview">
+      </div>
+
+      <div class="input-group">
+        <label>Gmail ID *</label>
+        <div class="verify-box">
+          <input type="email" id="regEmail" placeholder="example@gmail.com">
+          <button class="verify-btn" onclick="sendEmailOtp()">Send OTP</button>
+        </div>
+      </div>
+      <div class="input-group" id="emailOtpGroup" style="display:none;">
+        <label>Enter Gmail OTP (Use 5678)</label>
+        <div class="verify-box">
+          <input type="text" id="regEmailOtp" placeholder="4-digit OTP" maxlength="4">
+          <button class="verify-btn" style="background:#198754;" onclick="confirmEmailOtp()">Confirm OTP</button>
+        </div>
+        <div id="emailStatus"></div>
+      </div>
+
+      <button class="action-btn" style="background:#0d6efd; padding:14px; font-size:16px;" onclick="completePartnerRegistration()">🔒 Submit & Complete Registration</button>
+    </div>
+  </div>
+
+  <div class="container">
+    
+    <!-- Home Landing Page View -->
+    <div id="homeLandingSection">
+      <!-- Vertical Auto-Scrolling Carousel -->
+      <div class="vertical-slider-container">
+        <div class="vertical-slider-track">
+          <div class="slide-item">
+            <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80" alt="Electrician Service">
+            <div class="slide-label">⚡ Electrician Jobs & Wiring Works</div>
+          </div>
+          <div class="slide-item">
+            <img src="https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=800&q=80" alt="Plumber Service">
+            <div class="slide-label">🚰 Plumber Repairs & Pipe Fitting</div>
+          </div>
+          <div class="slide-item">
+            <img src="https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&w=800&q=80" alt="Carpenter Service">
+            <div class="slide-label">🪚 Carpenter Furniture Work</div>
+          </div>
+          <div class="slide-item">
+            <img src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800&q=80" alt="AC Technician Service">
+            <div class="slide-label">❄️ AC Technician Installation & Service</div>
+          </div>
+          
+          <div class="slide-item">
+            <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80" alt="Electrician Service">
+            <div class="slide-label">⚡ Electrician Jobs & Wiring Works</div>
+          </div>
+          <div class="slide-item">
+            <img src="https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=800&q=80" alt="Plumber Service">
+            <div class="slide-label">🚰 Plumber Repairs & Pipe Fitting</div>
+          </div>
+          <div class="slide-item">
+            <img src="https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&w=800&q=80" alt="Carpenter Service">
+            <div class="slide-label">🪚 Carpenter Furniture Work</div>
+          </div>
+          <div class="slide-item">
+            <img src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=800&q=80" alt="AC Technician Service">
+            <div class="slide-label">❄️ AC Technician Installation & Service</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="text-align:center; padding:30px 20px;">
+        <h2 style="color:#1a252f; margin-bottom:10px;">Welcome to EPC Partner Portal</h2>
+        <p style="color:#666; font-size:14px; margin-bottom:20px;">Join Kanchipuram's trusted network of verified technicians and service professionals.</p>
+        <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+          <button onclick="openRegisterPage()" style="background:#10b981; color:white; border:none; padding:12px 24px; border-radius:8px; font-weight:bold; font-size:14px; cursor:pointer;">📝 New Partner Registration</button>
+          <button onclick="openLoginModal()" style="background:#0d6efd; color:white; border:none; padding:12px 24px; border-radius:8px; font-weight:bold; font-size:14px; cursor:pointer;">🔑 Existing Partner Sign In</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN PARTNER DASHBOARD SECTION -->
+    <div id="partnerDashboard" style="display:none;">
+      
+      <!-- Duty Check-in & Live GPS Status Toggle Card -->
+      <div class="duty-card">
+        <div>
+          <strong style="font-size:14px; color:#1e1b4b;">Duty Attendance Status:</strong>
+          <div id="dutyStatusText" style="font-size:12px; color:#4338ca; font-weight:bold;">Offline</div>
+        </div>
+        <div>
+          <button id="dutyOnlineBtn" onclick="setDutyOnlineStatus(true)" style="background:#198754; color:white; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer;">🟢 Start Duty (Online)</button>
+          <button id="dutyOfflineBtn" onclick="setDutyOnlineStatus(false)" style="display:none; background:#dc3545; color:white; border:none; padding:8px 14px; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer;">🔴 End Duty (Offline)</button>
+        </div>
+      </div>
+
+      <div id="tabContent_home" class="card">
+        <h3 style="color: #0d6efd; margin-bottom: 10px;">Partner Job Verification & Execution Hub</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Customer orders matching your designation will appear here. Click to accept & process work.</p>
+
+        <div class="rating-summary-card" id="ratingSummaryCard">
+          <div>
+            <strong style="font-size:14px;">Your Service Rating Score:</strong>
+            <div style="font-size:12px; color:#555;" id="totalReviewsText">0 Customer Reviews Received</div>
+          </div>
+          <div style="font-size:20px; font-weight:800; color:#b78103;" id="avgScoreDisplay">⭐ 0.0 / 5</div>
+        </div>
+        
+        <div id="partnerJobsList"></div>
+      </div>
+
+      <div id="tabContent_ongoing" class="card" style="display:none;">
+        <h3>Job Management & Schedule</h3>
+        <div class="sub-tabs">
+          <div class="sub-tab active" onclick="switchSubTab('pending', this)">Pending</div>
+          <div class="sub-tab" onclick="switchSubTab('upcoming', this)">Upcoming</div>
+          <div class="sub-tab" onclick="switchSubTab('followup', this)">Follow up</div>
+          <div class="sub-tab" onclick="switchSubTab('completed', this)">Completed</div>
+        </div>
+        <div id="scheduledJobsList"></div>
+      </div>
+
+      <div id="tabContent_target" class="card" style="display:none;">
+        <h3>Performance & Weekly Incentives</h3>
+        <p style="font-size:12px; color:#666; margin-top:4px;">Next performance review on 25 Oct</p>
+        
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-title">Rating</div>
+            <div style="font-size:11px; color:#198754; margin-bottom:4px;">Keep 4.8 or above</div>
+            <div class="metric-val" id="metricRating">⭐ 0.0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Weekly Incentive</div>
+            <div style="font-size:11px; color:#198754; margin-bottom:4px;">⭐ 4.8+ Bonus</div>
+            <div class="metric-val" id="metricIncentive">₹0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Cancellations</div>
+            <div style="font-size:11px; color:#198754; margin-bottom:4px;">Keep 6 or below</div>
+            <div class="metric-val" id="metricCancellations">0</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Peak unavailable hours</div>
+            <div style="font-size:11px; color:#198754; margin-bottom:4px;">Keep 36 or below</div>
+            <div class="metric-val" id="metricPeakHours">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tabContent_money" class="card" style="display:none;">
+        <h3>Money & Loyalty Wallet</h3>
+        
+        <div style="background:#e8f5e9; padding:15px; border-radius:8px; margin:15px 0;">
+          <div style="font-size:12px; color:#2e7d32;">Earned this month</div>
+          <div style="font-size:28px; font-weight:bold; color:#1b5e20;" id="totalEarnedMonth">₹0</div>
+        </div>
+
+        <div style="background:#f1f3f5; padding:12px; border-radius:8px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <strong style="font-size:13px;">🎁 Refer & Earn Wallet Bonus:</strong>
+            <div style="font-size:11px; color:#666;">Refer friends & partners to earn extra payouts</div>
+          </div>
+          <div style="font-size:18px; font-weight:bold; color:#0d6efd;" id="partnerWallet">₹0</div>
+        </div>
+
+        <h4 style="font-size:14px; margin-top:15px;">Bank Transfers</h4>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+          <div style="flex:1; border:1px solid #ddd; padding:10px; border-radius:8px; background:#fff;">
+            <div style="font-size:16px; font-weight:bold;" id="upcomingPayout">₹0</div>
+            <div style="font-size:11px; color:#666;">02 - 04 Oct</div>
+            <div style="font-size:11px; color:#0d6efd; font-weight:bold; margin-top:4px;">Upcoming</div>
+          </div>
+          <div style="flex:1; border:1px solid #ddd; padding:10px; border-radius:8px; background:#fff;">
+            <div style="font-size:16px; font-weight:bold;" id="inProcessPayout">₹0</div>
+            <div style="font-size:11px; color:#666;">21 Sep - 01 Oct</div>
+            <div style="font-size:11px; color:#b78103; font-weight:bold; margin-top:4px;">In process</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tabContent_account" class="card" style="display:none;">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px; padding-bottom:12px; border-bottom:1px solid #eee;">
+          <div id="accountProfileImg" style="width:60px; height:60px; border-radius:50%; background:#1a252f; color:#fff; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:bold; overflow:hidden;">👷</div>
+          <div>
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <h3 id="accountPartnerName">Partner</h3>
+              <span id="accountPartnerId" class="id-badge">ID: PRT-0000</span>
+              <span id="accountPartnerDesignation" class="designation-badge">Electrician</span>
+            </div>
+            <div style="font-size:12px; color:#666; margin-top:2px;">
+              <span>Rating: ⭐ 4.77</span> | <span id="accountPartnerExp" style="color:#0d6efd; font-weight:bold;">Exp: 3 Years</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- LEAVE & PERMISSION APPLICATION SECTION -->
+        <div style="background:#fff3cd; border:1px solid #ffc107; padding:15px; border-radius:10px; margin-bottom:18px;">
+          <h4 style="color:#856404; margin-bottom:10px; font-size:15px;">✉️ Apply Leave or Permission</h4>
+          <div class="input-group">
+            <label>Request Type *</label>
+            <select id="leaveType">
+              <option value="Full Day Leave">Full Day Leave</option>
+              <option value="Half Day Leave">Half Day Leave</option>
+              <option value="Permission (2 Hours)">Permission (2 Hours)</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Date / Time Required *</label>
+            <input type="text" id="leaveDate" placeholder="e.g. 10 Oct 2026 or 2 PM - 4 PM">
+          </div>
+          <div class="input-group">
+            <label>Reason for Request *</label>
+            <input type="text" id="leaveReason" placeholder="Enter reason for leave">
+          </div>
+          <button class="action-btn" style="background:#0d6efd; margin-top:5px;" onclick="applyLeavePermission()">Submit Request for Admin Approval</button>
+        </div>
+
+        <h4 style="margin:10px 0; color:#0d6efd;">📅 AMC Service Subscriptions Active</h4>
+        <div id="amcList">
+          <div class="sub-card">
+            <strong style="font-size:13px;">Annual Maintenance Contract (AMC)</strong>
+            <p style="font-size:12px; color:#555; margin-top:2px;">3x AC Service + Free Electrical Checkup (₹1,499/yr)</p>
+            <div style="font-size:11px; color:#198754; font-weight:bold; margin-top:4px;">Active Recurring Service</div>
+          </div>
+        </div>
+
+        <div class="list-menu-item" onclick="toggleEditProfileView()"><span>👤 View & Update Partner Profile</span> <span>✏ Edit ›</span></div>
+
+        <div id="profileEditBox" style="display:none; background:#f8f9fa; border:1px solid #0d6efd; padding:15px; border-radius:8px; margin:10px 0 15px 0;">
+          <h4 style="margin-bottom:12px; color:#0d6efd;">Edit Partner Profile Details</h4>
+          
+          <div class="input-group">
+            <label>Full Name</label>
+            <input type="text" id="editName">
+          </div>
+
+          <div class="input-group">
+            <label>Mobile Number</label>
+            <input type="tel" id="editMobile" maxlength="10">
+          </div>
+
+          <div class="input-group">
+            <label>Designation / Profession</label>
+            <select id="editDesignation">
+              <option value="Electrician">Electrician</option>
+              <option value="Plumber">Plumber</option>
+              <option value="Carpenter">Carpenter</option>
+              <option value="AC Technician">AC Technician</option>
+              <option value="Painter">Painter</option>
+              <option value="Home Appliance Repair">Home Appliance Repair</option>
+              <option value="Cleaning Specialist">Cleaning Specialist</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Experience Level</label>
+            <select id="editExperience">
+              <option value="Fresher (0-1 Years)">Fresher (0-1 Years)</option>
+              <option value="1 - 3 Years">1 - 3 Years</option>
+              <option value="3 - 5 Years">3 - 5 Years</option>
+              <option value="5+ Years Expert">5+ Years Expert</option>
+            </select>
+          </div>
+
+          <div class="input-group">
+            <label>Update Profile Picture</label>
+            <input type="file" accept="image/*" onchange="updateProfilePhotoEdit(this)">
+          </div>
+
+          <div class="input-group">
+            <label>Current Working Address</label>
+            <input type="text" id="editCurrAddress">
+          </div>
+
+          <div class="input-group">
+            <label>Emergency Contact</label>
+            <input type="text" id="editEmergency" maxlength="10">
+          </div>
+
+          <button class="action-btn" style="background:#0d6efd;" onclick="savePartnerProfileUpdate()">💾 Save Profile Changes</button>
+        </div>
+
+        <div class="list-menu-item"><span>Loans</span> <span>›</span></div>
+        <div class="list-menu-item"><span>Insurance</span> <span>›</span></div>
+        <div class="list-menu-item"><span>Training</span> <span>›</span></div>
+        <div class="list-menu-item"><span>Help Center</span> <span>›</span></div>
+        <div class="list-menu-item"><span>Uploaded Documents (Aadhaar, PAN, Bank)</span> <span>✓ Verified ›</span></div>
+        <div class="list-menu-item"><span>WhatsApp Updates</span> <span>ON ›</span></div>
+        <div class="list-menu-item" onclick="deleteCurrentPartnerProfile()" style="color:#dc3545; font-weight:bold; border-bottom:none;"><span>⚠️️ Delete My Partner Account</span> <span>›</span></div>
+        <div class="list-menu-item" onclick="logoutPartner()" style="color:#666; font-weight:bold;"><span>Logout Account</span> <span>›</span></div>
+      </div>
+
+    </div>
+
+    <div class="bottom-nav" id="bottomNav" style="display:none;">
+      <div class="nav-item active" onclick="switchNavTab('home', this)">
+        <span>🏠</span> Home
+      </div>
+      <div class="nav-item" onclick="switchNavTab('ongoing', this)">
+        <span>🕒</span> Ongoing
+      </div>
+      <div class="nav-item" onclick="switchNavTab('target', this)">
+        <span>🎯</span> Target
+      </div>
+      <div class="nav-item" onclick="switchNavTab('money', this)">
+        <span>💰</span> Money
+      </div>
+      <div class="nav-item" onclick="switchNavTab('account', this)">
+        <span>👤</span> Account
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let currentPartner = null;
+    let isAadhaarVerified = false;
+    let isPanVerified = false;
+    let isUpiVerified = false;
+    let isEmailVerified = false;
+    let locationWatchIds = {};
+    let currentSubTab = 'pending';
+
+    let uploadedDocData = { photo: '', aadhaar: '', pan: '', bank: '' };
+
+    function showHomePage() {
+      document.getElementById('homeLandingSection').style.display = 'block';
+      document.getElementById('registerSection').style.display = 'none';
+      document.getElementById('registerPageBtn').style.display = 'inline-flex';
+      if (!currentPartner) {
+        document.getElementById('partnerDashboard').style.display = 'none';
+        document.getElementById('bottomNav').style.display = 'none';
+      }
+    }
+
+    function openRegisterPage() {
+      document.getElementById('registerSection').style.display = 'flex';
+      closeLoginModal();
+    }
+
+    function openLoginModal() {
+      document.getElementById('loginModal').style.display = 'flex';
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('loginModal');
+      const regModal = document.getElementById('registerSection');
+      if (event.target === modal) { modal.style.display = 'none'; }
+      if (event.target === regModal) { regModal.style.display = 'none'; }
+    };
+
+    function handleModalLogin() {
+      const id = document.getElementById('modalPartnerId').value.trim();
+      const pass = document.getElementById('modalPassword').value.trim();
+      closeLoginModal();
+      partnerLogin(id, pass);
+    }
+
+    function openForgotCredentialsModal(type) {
+      const title = type === 'user_id' ? '🔍 Find Your Partner User ID' : '🔑 Reset Your Partner Password';
+      const fieldLabel = type === 'user_id' ? 'Registered Gmail or Mobile Number' : 'Partner ID or Registered Gmail';
+      
+      const modalHtml = `
+        <div id="forgotModalOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:flex; justify-content:center; align-items:center; z-index:9999;">
+          <div style="background:#fff; padding:20px; border-radius:12px; width:90%; max-width:380px;">
+            <h4 style="color:#1a252f; margin-bottom:12px;">${title}</h4>
+            <div class="input-group">
+              <label>${fieldLabel}</label>
+              <input type="text" id="forgotInputVal" placeholder="Enter details...">
+            </div>
+            <div style="display:flex; gap:8px; margin-top:15px;">
+              <button onclick="processForgotRequest('${type}')" style="flex:1; background:#0d6efd; color:white; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer;">Submit</button>
+              <button onclick="document.getElementById('forgotModalOverlay').remove()" style="flex:1; background:#6c757d; color:white; border:none; padding:10px; border-radius:6px; font-weight:bold; cursor:pointer;">Cancel</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+
+    function processForgotRequest(type) {
+      const inputVal = document.getElementById('forgotInputVal').value.trim();
+      if (!inputVal) { alert('Please enter required detail.'); return; }
+
+      const partners = getRegisteredPartners();
+      const found = partners.find(p => p.email === inputVal || p.partnerId === inputVal || p.mobile === inputVal || p.emergency === inputVal);
+
+      if (type === 'user_id') {
+        if (found) {
+          alert(`✅ Account Found!\n\nYour Partner ID is: ${found.partnerId}`);
+        } else {
+          alert(`If an account exists for ${inputVal}, your Partner ID has been dispatched via Gmail! (Demo Partner ID: PRT-DEMO)`);
+        }
+      } else {
+        if (found) {
+          alert(`✅ Password reset code dispatched to ${found.email || inputVal}.\nYour Temporary Password is: ${found.pass}`);
+        } else {
+          alert(`Password reset instructions sent to ${inputVal} if registered.`);
+        }
+      }
+      document.getElementById('forgotModalOverlay').remove();
+    }
+
+    function getRegisteredPartners() {
+      try {
+        return JSON.parse(localStorage.getItem('epc_registered_partners') || '[]');
+      } catch(e) { return []; }
+    }
+
+    function saveRegisteredPartners(partners) {
+      localStorage.setItem('epc_registered_partners', JSON.stringify(partners));
+    }
+
+    function getSharedBookings() {
+      try {
+        return JSON.parse(localStorage.getItem('epc_bookings') || '[]');
+      } catch(e) { return []; }
+    }
+
+    function saveSharedBookings(bookings) {
+      localStorage.setItem('epc_bookings', JSON.stringify(bookings));
+    }
+
+    function playAudioAlert(amount, title) {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        osc.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.5);
+
+        setTimeout(() => {
+          if ('speechSynthesis' in window) {
+            const msg = new SpeechSynthesisUtterance(`New Order Received! ${amount} Rupees. ${title}`);
+            msg.lang = 'ta-IN';
+            window.speechSynthesis.speak(msg);
+          }
+        }, 600);
+      } catch(e) { console.log(e); }
+    }
+
+    function triggerPushNotif(orderId, title, body) {
+      const bookings = getSharedBookings();
+      const b = bookings.find(x => x.id === orderId);
+      if (b) {
+        b.pushNotifPending = true;
+        b.pushTitle = title;
+        b.pushBody = body;
+        saveSharedBookings(bookings);
+      }
+    }
+
+    function switchNavTab(tabName, el) {
+      document.querySelectorAll('.bottom-nav .nav-item').forEach(i => i.classList.remove('active'));
+      if(el) el.classList.add('active');
+
+      ['home', 'ongoing', 'target', 'money', 'account'].forEach(t => {
+        const targetEl = document.getElementById(`tabContent_${t}`);
+        if(targetEl) targetEl.style.display = (t === tabName) ? 'block' : 'none';
+      });
+
+      if(tabName === 'home') renderPartnerJobs();
+      if(tabName === 'ongoing') renderScheduledJobs();
+      if(tabName === 'target') calculateMetrics();
+      if(tabName === 'money') calculateEarnings();
+    }
+
+    function switchSubTab(subTabName, el) {
+      document.querySelectorAll('.sub-tab').forEach(s => s.classList.remove('active'));
+      el.classList.add('active');
+      currentSubTab = subTabName;
+      renderScheduledJobs();
+    }
+
+    function isPartnerFree(partnerName) {
+      const bookings = getSharedBookings();
+      return !bookings.some(b => b.assignedPartner === partnerName && b.status === 'ACTIVE' && !b.isCompleted);
+    }
+
+    function renderScheduledJobs() {
+      const container = document.getElementById('scheduledJobsList');
+      const bookings = getSharedBookings();
+      container.innerHTML = '';
+
+      const partnerDesig = currentPartner ? currentPartner.designation : 'Electrician';
+      const partnerName = currentPartner ? currentPartner.name : 'Partner Demo';
+      const partnerFree = isPartnerFree(partnerName);
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      const filteredBookings = bookings.filter(b => {
+        if (b.status === 'CANCELLED') return false;
+
+        if (currentSubTab === 'pending') {
+          return (b.assignedPartner === partnerName) && (!b.isCompleted) && (b.status !== 'COMPLETED');
+        }
+
+        if (currentSubTab === 'upcoming') {
+          if (!b.date) return false;
+          return (b.date > todayStr) && (b.assignedPartner === partnerName || !b.assignedPartner);
+        }
+
+        if (currentSubTab === 'followup') {
+          if (b.date !== todayStr) return false;
+          if (b.assignedPartner) return b.assignedPartner === partnerName;
+          if (b.requestedPartner) return b.requestedPartner === partnerName;
+          if (b.requiredDesignation) return b.requiredDesignation === partnerDesig && partnerFree;
+          return partnerFree;
+        }
+
+        if (currentSubTab === 'completed') {
+          return (b.assignedPartner === partnerName) && (b.status === 'COMPLETED' || b.isCompleted);
+        }
+
+        return false;
+      });
+
+      if (filteredBookings.length === 0) {
+        container.innerHTML = `<p style="color:#888; font-size:13px; margin-top:10px;">No ${currentSubTab} jobs found.</p>`;
+        return;
+      }
+
+      filteredBookings.forEach(b => {
+        let itemsSummary = b.items ? Object.values(b.items).map(i => `${i.title} (x${i.qty})`).join(', ') : 'Service Order';
+        
+        let ratingHtml = '';
+        if (currentSubTab === 'completed') {
+          if (b.isRated && b.userRating) {
+            ratingHtml = `<div style="margin-top:8px; padding:6px; background:#fff8e6; border:1px solid #ffc107; border-radius:6px; font-size:12px; font-weight:bold; color:#b78103;">
+                            ⭐ Customer Rating: ${b.userRating} / 5
+                          </div>`;
+          } else {
+            ratingHtml = `<div style="margin-top:8px; font-size:12px; color:#888;">⭐ Customer rating pending...</div>`;
+          }
+        }
+
+        container.innerHTML += `
+          <div class="job-card" style="margin-top:10px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+              <strong>📅 ${b.date || 'Today'} | ⏰ ${b.time || '10:00 AM'} ${b.isExpress ? '⚡ [EXPRESS]' : ''}</strong>
+              <span style="color:#0d6efd; font-weight:bold;">${b.assignedPartner ? 'ASSIGNED' : 'PENDING'}</span>
+            </div>
+            <div style="font-size:13px; font-weight:bold; color:#333;">${b.reenteredWork || itemsSummary}</div>
+            <div style="font-size:12px; color:#666; margin-top:2px;">📍 ${b.reenteredAddress || b.address || 'Kanchipuram'}</div>
+            <div style="font-size:12px; font-weight:bold; color:#198754; margin-top:4px;">💰 ₹${b.reenteredAmount || b.amount}</div>
+            
+            ${!b.assignedPartner ? `
+              <button class="action-btn" style="background:#ffc107; color:#000; margin-top:8px;" onclick="assignPartnerToJob('${b.id}')">👤 Accept Job</button>
+            ` : ''}
+
+            ${ratingHtml}
+          </div>
+        `;
+      });
+    }
+
+    function previewDocument(input, previewId) {
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const prev = document.getElementById(previewId);
+          if(file.type.startsWith('image/')) {
+            prev.src = e.target.result;
+            prev.style.display = 'block';
+          }
+          if(previewId === 'photoPreview') uploadedDocData.photo = e.target.result;
+          if(previewId === 'aadhaarPreview') uploadedDocData.aadhaar = e.target.result;
+          if(previewId === 'panPreview') uploadedDocData.pan = e.target.result;
+          if(previewId === 'bankPreview') uploadedDocData.bank = e.target.result;
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function verifyAadhaar() {
+      const val = document.getElementById('regAadhaar').value;
+      if(val.length === 12) {
+        isAadhaarVerified = true;
+        document.getElementById('aadhaarStatus').innerHTML = '<span class="success-badge">✓ Aadhaar Verified Successfully</span>';
+      } else { alert('Enter valid 12-digit Aadhaar number'); }
+    }
+
+    function verifyPan() {
+      const val = document.getElementById('regPan').value;
+      if(val.length === 10) {
+        isPanVerified = true;
+        document.getElementById('panStatus').innerHTML = '<span class="success-badge">✓ PAN Verified Successfully</span>';
+      } else { alert('Enter valid 10-digit PAN number'); }
+    }
+
+    function verifyUpi() {
+      const val = document.getElementById('regUpi').value;
+      if(val.includes('@')) {
+        isUpiVerified = true;
+        document.getElementById('upiStatus').innerHTML = '<span class="success-badge">✓ UPI Handle Verified</span>';
+      } else { alert('Enter valid UPI ID'); }
+    }
+
+    function sendEmailOtp() {
+      const email = document.getElementById('regEmail').value;
+      if(email.includes('@gmail.com')) {
+        document.getElementById('emailOtpGroup').style.display = 'block';
+        alert('OTP sent to ' + email + ' (Use 5678 for testing)');
+      } else { alert('Enter valid Gmail ID'); }
+    }
+
+    function confirmEmailOtp() {
+      const otp = document.getElementById('regEmailOtp').value;
+      if(otp === '5678') {
+        isEmailVerified = true;
+        document.getElementById('emailStatus').innerHTML = '<span class="success-badge">✓ Gmail Verified Successfully</span>';
+      } else { alert('Invalid OTP! Enter 5678'); }
+    }
+
+    function completePartnerRegistration() {
+      const name = document.getElementById('regName').value.trim();
+      const mobile = document.getElementById('regMobile').value.trim();
+      const email = document.getElementById('regEmail').value.trim().toLowerCase();
+      const designation = document.getElementById('regDesignation').value;
+      const experience = document.getElementById('regExperience').value;
+
+      if(!name || !mobile || !email) { 
+        alert('Please fill all mandatory details (Name, Mobile, Email).'); 
+        return; 
+      }
+
+      if(mobile.length !== 10) {
+        alert('Please enter a valid 10-digit mobile number.');
+        return;
+      }
+
+      const partners = getRegisteredPartners();
+      const isMobileExist = partners.some(p => p.mobile === mobile);
+      const isEmailExist = partners.some(p => p.email === email);
+
+      if(isMobileExist || isEmailExist) {
+        alert('⚠️ Already Used! This Mobile Number or Gmail ID is already registered with another partner profile.');
+        return;
+      }
+
+      if(!uploadedDocData.photo || !uploadedDocData.aadhaar || !uploadedDocData.pan || !uploadedDocData.bank) {
+        alert('Please upload all required documents: Profile Photo, Aadhaar Copy, PAN Copy, and Bank Passbook!');
+        return;
+      }
+
+      if(!isAadhaarVerified || !isPanVerified || !isEmailVerified) {
+        alert('Please complete all verifications (Aadhaar, PAN, Gmail) before registering!');
+        return;
+      }
+
+      const generatedPartnerId = 'PRT-' + Math.floor(1000 + Math.random() * 9000);
+
+      const newPartner = {
+        partnerId: generatedPartnerId,
+        name: name,
+        mobile: mobile,
+        designation: designation,
+        experience: experience,
+        fatherName: document.getElementById('regFatherName').value,
+        dob: document.getElementById('regDob').value,
+        permAddress: document.getElementById('regPermAddress').value,
+        currAddress: document.getElementById('regCurrAddress').value,
+        emergency: document.getElementById('regEmergency').value,
+        email: email,
+        wallet: 100,
+        docs: uploadedDocData
+      };
+
+      partners.push(newPartner);
+      saveRegisteredPartners(partners);
+
+      alert(`🎉 Registration Successful!\n\nYour Unique Partner ID: ${generatedPartnerId}\nDesignation: ${designation}\nExperience: ${experience}\nWallet Bonus: ₹100\nYour account is now securely registered!`);
+      
+      openLoginModal();
+      document.getElementById('modalPartnerId').value = generatedPartnerId;
+    }
+
+    function partnerLogin(id, pass) {
+      if (!id || !pass) {
+        alert('Please enter valid credentials.');
+        return;
+      }
+
+      const partners = getRegisteredPartners();
+
+      const found = partners.find(p => (p.partnerId === id || p.email === id.toLowerCase() || p.mobile === id) && (p.pass === pass || p.password === pass || p.tempPassword === pass));
+      
+      if(found || (id === 'partner' && pass === '1234')) {
+        currentPartner = found || { name: 'Partner Demo', partnerId: 'PRT-DEMO', mobile: '9000000000', designation: 'Electrician', experience: '3 Years', wallet: 100, docs: {} };
+        
+        loadPartnerDashboard();
+      } else {
+        alert('Invalid Credentials or Partner ID not found!');
+      }
+    }
+
+    function loadPartnerDashboard() {
+      document.getElementById('homeLandingSection').style.display = 'none';
+      document.getElementById('registerSection').style.display = 'none';
+      document.getElementById('registerPageBtn').style.display = 'none';
+      document.getElementById('headerAuthBtn').style.display = 'none';
+      
+      document.getElementById('partnerDashboard').style.display = 'block';
+      document.getElementById('bottomNav').style.display = 'flex';
+      document.getElementById('partnerNameDisplay').style.display = 'inline';
+      document.getElementById('partnerNameDisplay').innerText = '👷 ' + currentPartner.name;
+      document.getElementById('accountPartnerName').innerText = currentPartner.name;
+      document.getElementById('accountPartnerId').innerText = 'ID: ' + currentPartner.partnerId;
+      document.getElementById('accountPartnerDesignation').innerText = currentPartner.designation || 'Electrician';
+      document.getElementById('accountPartnerExp').innerText = 'Exp: ' + (currentPartner.experience || '3 Years');
+      document.getElementById('partnerWallet').innerText = '₹' + (currentPartner.wallet || 100);
+
+      if(currentPartner.docs && currentPartner.docs.photo) {
+        document.getElementById('accountProfileImg').innerHTML = `<img src="${currentPartner.docs.photo}" style="width:100%; height:100%; object-fit:cover;">`;
+      } else {
+        document.getElementById('accountProfileImg').innerText = '👷';
+      }
+
+      document.getElementById('logoutBtn').style.display = 'inline';
+      document.getElementById('partnerRatingDisplay').style.display = 'inline';
+      
+      if (currentPartner.isOnline) {
+        document.getElementById('dutyStatusText').innerText = '🟢 Online & Active';
+        document.getElementById('dutyOnlineBtn').style.display = 'none';
+        document.getElementById('dutyOfflineBtn').style.display = 'inline-block';
+      } else {
+        document.getElementById('dutyStatusText').innerText = '🔴 Offline';
+        document.getElementById('dutyOnlineBtn').style.display = 'inline-block';
+        document.getElementById('dutyOfflineBtn').style.display = 'none';
+      }
+
+      switchNavTab('home');
+      updatePartnerRatingBadge();
+      renderPartnerJobs();
+    }
+
+    function updateProfilePhotoEdit(input) {
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          if (!currentPartner.docs) currentPartner.docs = {};
+          currentPartner.docs.photo = e.target.result;
+          document.getElementById('accountProfileImg').innerHTML = `<img src="${e.target.result}" style="width:100%; height:100%; object-fit:cover;">`;
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function toggleEditProfileView() {
+      const box = document.getElementById('profileEditBox');
+      if (box.style.display === 'none' || box.style.display === '') {
+        box.style.display = 'block';
+        document.getElementById('editName').value = currentPartner.name || '';
+        document.getElementById('editMobile').value = currentPartner.mobile || '';
+        document.getElementById('editDesignation').value = currentPartner.designation || 'Electrician';
+        document.getElementById('editExperience').value = currentPartner.experience || '1 - 3 Years';
+        document.getElementById('editCurrAddress').value = currentPartner.currAddress || '';
+        document.getElementById('editEmergency').value = currentPartner.emergency || '';
+      } else {
+        box.style.display = 'none';
+      }
+    }
+
+    function savePartnerProfileUpdate() {
+      if (!currentPartner || currentPartner.partnerId === 'PRT-DEMO') {
+        alert('Demo Profile changes are temporary.');
+      }
+
+      currentPartner.name = document.getElementById('editName').value;
+      currentPartner.mobile = document.getElementById('editMobile').value;
+      currentPartner.designation = document.getElementById('editDesignation').value;
+      currentPartner.experience = document.getElementById('editExperience').value;
+      currentPartner.currAddress = document.getElementById('editCurrAddress').value;
+      currentPartner.emergency = document.getElementById('editEmergency').value;
+
+      let partners = getRegisteredPartners();
+      let idx = partners.findIndex(p => p.partnerId === currentPartner.partnerId);
+      if (idx !== -1) {
+        partners[idx] = currentPartner;
+        saveRegisteredPartners(partners);
+      }
+
+      document.getElementById('accountPartnerName').innerText = currentPartner.name;
+      document.getElementById('accountPartnerDesignation').innerText = currentPartner.designation;
+      document.getElementById('accountPartnerExp').innerText = 'Exp: ' + currentPartner.experience;
+      document.getElementById('partnerNameDisplay').innerText = '👷 ' + currentPartner.name;
+      
+      document.getElementById('profileEditBox').style.display = 'none';
+      alert('✓ Partner Profile Details Updated Successfully!');
+    }
+
+    function deleteCurrentPartnerProfile() {
+      if(!currentPartner || currentPartner.partnerId === 'PRT-DEMO') {
+        alert('Demo account cannot be deleted.');
+        return;
+      }
+
+      if(confirm(`Are you sure you want to delete your profile permanently? (ID: ${currentPartner.partnerId})\nThis action cannot be undone.`)) {
+        let partners = getRegisteredPartners();
+        partners = partners.filter(p => p.partnerId !== currentPartner.partnerId);
+        saveRegisteredPartners(partners);
+        alert('Your Profile & Documents have been deleted permanently from the database.');
+        logoutPartner();
+      }
+    }
+
+    function logoutPartner() {
+      currentPartner = null;
+      document.getElementById('headerAuthBtn').style.display = 'inline-flex';
+      document.getElementById('partnerDashboard').style.display = 'none';
+      document.getElementById('bottomNav').style.display = 'none';
+      document.getElementById('partnerNameDisplay').style.display = 'none';
+      document.getElementById('partnerRatingDisplay').style.display = 'none';
+      document.getElementById('logoutBtn').style.display = 'none';
+      showHomePage();
+    }
+
+    function updatePartnerRatingBadge() {
+      let ratings = JSON.parse(localStorage.getItem('epc_partner_ratings') || '{}');
+      let pData = ratings[currentPartner ? currentPartner.name : ''] || { totalRatings: 0, ratingSum: 0 };
+      
+      let avg = pData.totalRatings > 0 ? (pData.ratingSum / pData.totalRatings).toFixed(1) : '5.0';
+      document.getElementById('partnerRatingDisplay').innerText = `⭐ ${avg} (${pData.totalRatings})`;
+      document.getElementById('avgScoreDisplay').innerText = `⭐ ${avg} / 5`;
+      document.getElementById('totalReviewsText').innerText = `${pData.totalRatings} Customer Rating(s) Added`;
+      document.getElementById('metricRating').innerText = `⭐ ${avg}`;
+    }
+
+    function calculateMetrics() {
+      const bookings = getSharedBookings();
+      const partnerName = currentPartner ? currentPartner.name : '';
+
+      let cancellationsCount = 0;
+      let peakUnavailable = 0;
+
+      bookings.forEach(b => {
+        if (b.assignedPartner === partnerName) {
+          if (b.status === 'CANCELLED') {
+            cancellationsCount++;
+          }
+        }
+      });
+
+      let ratings = JSON.parse(localStorage.getItem('epc_partner_ratings') || '{}');
+      let pData = ratings[partnerName] || { totalRatings: 0, ratingSum: 0 };
+      let avgRating = pData.totalRatings > 0 ? (pData.ratingSum / pData.totalRatings).toFixed(1) : '0.0';
+
+      let incentiveBonus = parseFloat(avgRating) >= 4.8 ? 500 : 0;
+
+      document.getElementById('metricRating').innerText = `⭐ ${avgRating}`;
+      document.getElementById('metricIncentive').innerText = `₹${incentiveBonus}`;
+      document.getElementById('metricCancellations').innerText = cancellationsCount;
+      document.getElementById('metricPeakHours').innerText = peakUnavailable;
+    }
+
+    function calculateEarnings() {
+      const bookings = getSharedBookings();
+      const partnerName = currentPartner ? currentPartner.name : '';
+      let totalEarned = 0;
+
+      bookings.forEach(b => {
+        if (b.assignedPartner === partnerName && (b.status === 'COMPLETED' || b.isCompleted)) {
+          totalEarned += parseFloat(b.reenteredAmount || b.amount || 0);
+        }
+      });
+
+      document.getElementById('totalEarnedMonth').innerText = `₹${totalEarned}`;
+      document.getElementById('upcomingPayout').innerText = `₹${Math.round(totalEarned * 0.8)}`;
+      document.getElementById('inProcessPayout').innerText = `₹${Math.round(totalEarned * 0.2)}`;
+    }
+
+    function assignPartnerToJob(id) {
+      const bookings = getSharedBookings();
+      const b = bookings.find(x => x.id === id);
+      if (b) {
+        b.assignedPartner = currentPartner ? currentPartner.name : 'Partner Demo';
+        b.partnerStatus = 'ASSIGNED';
+        b.workStatus = 'Partner Assigned';
+        saveSharedBookings(bookings);
+        triggerPushNotif(id, "Partner Assigned!", `${b.assignedPartner} has accepted your service order #${b.id}.`);
+        alert('Job accepted and assigned to ' + b.assignedPartner + '. It will now move to Processing.');
+        renderPartnerJobs();
+      }
+    }
+
+    function notifyArrival(id) {
+      const bookings = getSharedBookings();
+      const b = bookings.find(x => x.id === id);
+      if (b) {
+        b.isArrived = true;
+        b.workStatus = 'Partner Arrived at Location';
+        saveSharedBookings(bookings);
+        triggerPushNotif(id, "Partner Arrived! 🚗", "Your partner has arrived at your doorstep!");
+        alert('✓ Customer notified: You have arrived at location!');
+        renderPartnerJobs();
+      }
+    }
+
+    function startLiveTracking(id) {
+      if (navigator.geolocation) {
+        locationWatchIds[id] = navigator.geolocation.watchPosition((pos) => {
+          const bookings = getSharedBookings();
+          const b = bookings.find(x => x.id === id);
+          if (b) {
+            b.liveLat = pos.coords.latitude;
+            b.liveLng = pos.coords.longitude;
+            b.isTrackingActive = true;
+            saveSharedBookings(bookings);
+            const statusElem = document.getElementById(`tracking_status_${id}`);
+            if (statusElem) {
+              statusElem.innerHTML = `📍 Live GPS Active: Lat ${pos.coords.latitude.toFixed(4)}, Lng ${pos.coords.longitude.toFixed(4)}`;
+            }
+          }
+        });
+        alert('🌐 Live Location Sharing Started with Customer!');
+      } else { alert('Geolocation is not supported by your browser.'); }
+    }
+
+    function savePartnerWorkDetails(id) {
+      const work = document.getElementById(`work_desc_${id}`).value;
+      const addr = document.getElementById(`work_addr_${id}`).value;
+      const amt = document.getElementById(`work_amt_${id}`).value;
+      const spareAmt = document.getElementById(`spare_amt_${id}`).value || 0;
+
+      if(!work || !addr || !amt) { alert('Please fill work description, address, and total amount.'); return; }
+
+      const bookings = getSharedBookings();
+      const b = bookings.find(x => x.id === id);
+      if (b) {
+        b.reenteredWork = work;
+        b.reenteredAddress = addr;
+        b.reenteredAmount = parseFloat(amt) + parseFloat(spareAmt);
+        b.spareCharges = parseFloat(spareAmt);
+        b.partnerReentered = true;
+        b.workStatus = 'Details Submitted for Customer Review';
+        saveSharedBookings(bookings);
+        alert('✓ Details saved! Sent to customer for confirmation.');
+        renderPartnerJobs();
+      }
+    }
+
+    let tempWorkPhotos = {};
+
+    function previewSafetyPhoto(input, orderId, type) {
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          if (!tempWorkPhotos[orderId]) tempWorkPhotos[orderId] = {};
+          tempWorkPhotos[orderId][type] = e.target.result;
+          alert(`📸 ${type.toUpperCase()} Verification Photo uploaded!`);
+        }
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function verifyJobStartOTP(id) {
+      const enteredOtp = document.getElementById(`start_otp_${id}`).value;
+      const bookings = getSharedBookings();
+      const b = bookings.find(x => x.id === id);
+
+      if (b && parseInt(enteredOtp) === b.startOTP) {
+        b.isStarted = true;
+        b.workStatus = 'Work in Progress';
+        saveSharedBookings(bookings);
+        triggerPushNotif(id, "Work Started! ⚡", "Partner has verified OTP and started the service.");
+        alert('🎉 OTP Verified! Work Timer Started.');
+        renderPartnerJobs();
+      } else { alert('Invalid Job Start OTP! Check with customer.'); }
+    }
+
+    function generatePDFBill(b) {
+      if (!window.jspdf) return;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(18);
+      doc.text("EPC Services - Digital Job Card & Bill", 14, 20);
+      
+      doc.setFontSize(12);
+      doc.text(`Order ID: #${b.id}`, 14, 32);
+      doc.text(`Customer Address: ${b.reenteredAddress || b.address}`, 14, 40);
+      doc.text(`Partner Name: ${b.assignedPartner}`, 14, 48);
+
+      doc.text("--------------------------------------------------", 14, 56);
+      doc.text(`Service Description: ${b.reenteredWork || 'General Service'}`, 14, 66);
+      doc.text(`Labour Charges: ₹${(b.reenteredAmount || b.amount) - (b.spareCharges || 0)}`, 14, 76);
+      doc.text(`Spare Parts/Materials: ₹${b.spareCharges || 0}`, 14, 86);
+      doc.text(`Total Bill Amount: ₹${b.reenteredAmount || b.amount}`, 14, 96);
+      doc.text("--------------------------------------------------", 14, 104);
+
+      doc.save(`EPC_Bill_Order_${b.id}.pdf`);
+    }
+
+    function sendChatMessage(orderId) {
+      const input = document.getElementById(`chat_input_${orderId}`);
+      if (!input || !input.value.trim()) return;
+
+      const bookings = getSharedBookings();
+      const b = bookings.find(x => x.id === orderId);
+      if (b) {
+        if (!b.chatMessages) b.chatMessages = [];
+        b.chatMessages.push({ sender: 'Partner', text: input.value.trim(), time: new Date().toLocaleTimeString() });
+        saveSharedBookings(bookings);
+        input.value = '';
+        renderPartnerJobs();
+      }
+    }
+
+    function renderPartnerJobs() {
+      const container = document.getElementById('partnerJobsList');
+      const bookings = getSharedBookings();
+      container.innerHTML = '';
+
+      const partnerDesig = currentPartner ? currentPartner.designation : 'Electrician';
+      const partnerName = currentPartner ? currentPartner.name : 'Partner Demo';
+      const partnerFree = isPartnerFree(partnerName);
+
+      const relevantJobs = bookings.filter(b => {
+        if (b.status === 'CANCELLED' || b.status === 'COMPLETED') return false;
+        if (b.assignedPartner === partnerName) return true;
+        if (!b.assignedPartner && partnerFree) {
+          if (b.requestedPartner && b.requestedPartner === partnerName) return true;
+          if (b.requiredDesignation && b.requiredDesignation === partnerDesig) return true;
+        }
+        return false;
+      });
+
+      if (relevantJobs.length === 0) {
+        container.innerHTML = `<p style="color:#888; font-size:13px; margin-top:15px;">No active service requests available for ${partnerDesig}.</p>`;
+        return;
+      }
+
+      relevantJobs.forEach(b => {
+        let itemsSummary = Object.values(b.items || {}).map(i => `${i.title} (x${i.qty})`).join(', ');
+
+        if (!b.assignedPartner) {
+          playAudioAlert(b.amount, itemsSummary);
+        }
+
+        let actionArea = '';
+
+        if (!b.assignedPartner) {
+          actionArea = `
+            <button class="action-btn" style="background:#0d6efd;" onclick="assignPartnerToJob('${b.id}')">⚡ Accept & Assign Order</button>
+          `;
+        } else if (!b.partnerReentered) {
+          actionArea = `
+            <div style="background:#fff3cd; padding:10px; border-radius:6px; margin-top:10px;">
+              <h5 style="margin-bottom:6px; color:#856404;">🧾 Re-enter Final Work & Digital Bill Details</h5>
+              <div class="input-group">
+                <label>Work Items Description</label>
+                <input type="text" id="work_desc_${b.id}" value="${itemsSummary}">
+              </div>
+              <div class="input-group">
+                <label>Verified Address</label>
+                <input type="text" id="work_addr_${b.id}" value="${b.address}">
+              </div>
+              <div class="input-group">
+                <label>Labour Charges (₹)</label>
+                <input type="number" id="work_amt_${b.id}" value="${b.amount}">
+              </div>
+              <div class="input-group">
+                <label>Spare Parts / Material Charges (₹)</label>
+                <input type="number" id="spare_amt_${b.id}" placeholder="0">
+              </div>
+              <button class="action-btn" style="background:#198754;" onclick="savePartnerWorkDetails('${b.id}')">💾 Save & Send to Customer</button>
+            </div>
+          `;
+        } else if (b.partnerReentered && !b.customerConfirmed) {
+          actionArea = `<div style="background:#e7f1ff; color:#0d6efd; padding:10px; border-radius:6px; font-weight:bold; font-size:12px; margin-top:10px; text-align:center;">⏳ Waiting for Customer to Confirm Re-entered Details...</div>`;
+        } else if (b.customerConfirmed && !b.isStarted) {
+          actionArea = `
+            <div style="background:#f8f9fa; border:1px solid #0d6efd; padding:10px; border-radius:6px; margin-top:10px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <button onclick="notifyArrival('${b.id}')" style="background:#ffc107; color:#000; border:none; padding:6px 10px; border-radius:4px; font-weight:bold; font-size:11px; cursor:pointer;">📢 Push Notif: I Have Arrived</button>
+                <button onclick="startLiveTracking('${b.id}')" style="background:#0d6efd; color:#fff; border:none; padding:6px 10px; border-radius:4px; font-weight:bold; font-size:11px; cursor:pointer;">📡 Start Live GPS</button>
+              </div>
+              <div id="tracking_status_${b.id}" style="font-size:11px; color:#555; margin-bottom:8px;"></div>
+              
+              <div class="input-group">
+                <label>🦺 Safety Check-in: Uniform & ID Photo</label>
+                <input type="file" accept="image/*" capture="environment" onchange="previewSafetyPhoto(this, '${b.id}', 'uniform')">
+              </div>
+
+              <label style="font-size:12px; font-weight:bold;">Enter Job Start OTP from Customer:</label>
+              <div class="verify-box" style="margin-top:4px;">
+                <input type="text" id="start_otp_${b.id}" placeholder="4-digit Start OTP" maxlength="4">
+                <button class="verify-btn" style="background:#198754;" onclick="verifyJobStartOTP('${b.id}')">Start Work</button>
+              </div>
+            </div>
+          `;
+        } else if (b.isStarted) {
+          actionArea = `
+            <div style="background:#e8f5e9; border:1px solid #198754; padding:12px; border-radius:6px; margin-top:10px;">
+              <div style="color:#1b5e20; font-weight:bold; font-size:13px; margin-bottom:8px;">⚡ Work In Progress</div>
+              
+              <div class="input-group">
+                <label>📷 Upload 'Before Work' Photo</label>
+                <input type="file" id="beforePhoto_${b.id}" accept="image/*" capture="environment" onchange="previewSafetyPhoto(this, '${b.id}', 'before')">
+              </div>
+              <div class="input-group">
+                <label>📷 Upload 'After Work' Photo</label>
+                <input type="file" id="afterPhoto_${b.id}" accept="image/*" capture="environment" onchange="previewSafetyPhoto(this, '${b.id}', 'after')">
+              </div>
+
+              <button class="action-btn" style="background:#0d6efd; margin-bottom:8px;" onclick="showPartnerPaymentModal(${JSON.stringify(b).replace(/"/g, '&quot;')})">💳 Collect Payment (QR Code / Link)</button>
+              <button class="action-btn" style="background:#198754;" onclick="completeJobWork('${b.id}')">✓ Complete Work & Generate PDF Bill</button>
+            </div>
+          `;
+        }
+
+        let chatHtml = `
+          <div class="chat-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <strong style="font-size:12px; color:#0d6efd;">💬 In-App Direct Chat</strong>
+              <button onclick="alert('📞 Masked Direct Call Connected safely!')" style="background:#198754; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;">📞 Call (Masked)</button>
+            </div>
+            <div class="chat-messages">
+              ${(b.chatMessages || []).map(m => `<div class="chat-msg ${m.sender === 'Partner' ? 'self' : ''}"><b>${m.sender}:</b>${m.text}</div>`).join('')}
+            </div>
+            <div style="display:flex; gap:6px;">
+              <input type="text" id="chat_input_${b.id}" placeholder="Type message..." style="flex:1; padding:6px; font-size:12px; border:1px solid #ccc; border-radius:4px;">
+              <button onclick="sendChatMessage('${b.id}')" style="background:#0d6efd; color:white; border:none; padding:6px 10px; border-radius:4px; font-size:12px; cursor:pointer;">Send</button>
+            </div>
+          </div>
+        `;
+
+        container.innerHTML += `
+          <div class="job-card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <strong>Order ID: #${b.id} ${b.isExpress ? '⚡ [EXPRESS 30-MIN]' : ''}</strong>
+              <span style="color:#198754; font-weight:bold;">₹${b.reenteredAmount || b.amount}</span>
+            </div>
+            <div style="font-size:12px; color:#555;"><strong>Customer Work:</strong> ${b.reenteredWork || itemsSummary}</div>
+            <div style="font-size:12px; color:#555;"><strong>Address:</strong> ${b.reenteredAddress || b.address}</div>
+            <div style="font-size:12px; color:#555;"><strong>Payment Mode:</strong> ${b.payMethod || 'Razorpay/UPI'}</div>
+            
+            ${getExtraPartnerActionsHtml(b)}
+            ${chatHtml}
+            ${actionArea}
+          </div>
+        `;
+      });
+    }
+
+    function openGoogleMapsNavigation(address) {
+      if (!address) return;
+      const encodedAddr = encodeURIComponent(address + ", Kanchipuram");
+      const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodedAddr}`;
+      window.open(mapsUrl, '_blank');
+    }
+
+    function getExtraPartnerActionsHtml(b) {
+      return `
+        <div style="display:flex; gap:6px; margin-top:8px;">
+          <button onclick="openGoogleMapsNavigation('${b.reenteredAddress || b.address}')" 
+                  style="flex:1; background:#0d6efd; color:white; border:none; padding:8px; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer;">
+            🗺️ Navigate in Google Maps
+          </button>
+          <button onclick="alert('📞 Masked Direct Call Initiated')" 
+                  style="flex:1; background:#198754; color:white; border:none; padding:8px; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer;">
+            📞 Call Customer
+          </button>
+        </div>
+      `;
+    }
+
+    function compressImage(file, maxWidth = 400, quality = 0.3) {
+      return new Promise((resolve, reject) => {
+        if (!file) resolve(null);
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+            resolve(compressedBase64);
+          };
+          img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+      });
+    }
+
+    async function completeJobWork(orderId) {
+      try {
+        const beforeInput = document.getElementById(`beforePhoto_${orderId}`);
+        const afterInput = document.getElementById(`afterPhoto_${orderId}`);
+
+        const beforeBase64 = beforeInput && beforeInput.files[0] 
+          ? await compressImage(beforeInput.files[0]) 
+          : null;
+          
+        const afterBase64 = afterInput && afterInput.files[0] 
+          ? await compressImage(afterInput.files[0]) 
+          : null;
+
+        let bookings = getSharedBookings();
+        let job = bookings.find(b => b.id === orderId || b.id === String(orderId));
+
+        if (job) {
+          if (tempWorkPhotos[orderId]) {
+            job.uniformPhoto = tempWorkPhotos[orderId].uniform || null;
+            if (beforeBase64) job.beforePhoto = beforeBase64;
+            if (afterBase64) job.afterPhoto = afterBase64;
+          }
+
+          job.status = 'COMPLETED';
+          job.isCompleted = true;
+          job.workStatus = 'Work Completed';
+
+          try {
+            saveSharedBookings(bookings);
+          } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+              alert('Local Storage full! Clearing old completed bookings...');
+              bookings = bookings.filter(b => b.status !== 'COMPLETED' || b.id === orderId);
+              saveSharedBookings(bookings);
+            } else {
+              throw e;
+            }
+          }
+
+          if (locationWatchIds[orderId]) navigator.geolocation.clearWatch(locationWatchIds[orderId]);
+
+          generatePDFBill(job);
+
+          triggerPushNotif(orderId, "Service Completed! 🎉", "Your service is complete. Digital PDF Bill generated.");
+          alert('🎉 Work Completed Successfully!');
+
+          if (typeof renderPartnerJobs === 'function') {
+            renderPartnerJobs();
+          } else if (typeof renderScheduledJobs === 'function') {
+            renderScheduledJobs();
+          }
+        }
+      } catch (error) {
+        console.error("Complete Job Error:", error);
+        alert("Error completing work: " + error.message);
+      }
+    }
+
+    function showPartnerPaymentModal(b) {
+      const finalAmount = b.reenteredAmount || b.amount;
+      const upiId = currentPartner && currentPartner.upi ? currentPartner.upi : "epcservices@upi";
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiId}&pn=EPC%20Services&am=${finalAmount}&cu=INR`;
+
+      const modalHtml = `
+        <div id="paymentModalOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:flex; justify-content:center; align-items:center; z-index:9999;">
+          <div style="background:#fff; padding:20px; border-radius:12px; width:90%; max-width:380px; text-align:center;">
+            <h4 style="color:#1a252f; margin-bottom:10px;">💳 Collect Customer Payment</h4>
+            <p style="font-size:13px; color:#555; margin-bottom:12px;">Total Bill Amount: <strong style="color:#198754; font-size:16px;">₹${finalAmount}</strong></p>
+            
+            <div style="background:#f8f9fa; padding:10px; border-radius:8px; border:1px solid #ddd; display:inline-block; margin-bottom:12px;">
+              <img src="${qrUrl}" alt="Payment QR Code" style="width:180px; height:180px;">
+              <div style="font-size:11px; color:#666; margin-top:4px;">Scan using PhonePe / GPay / Paytm</div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <button onclick="sendPayNotificationToCustomer('${b.id}')" style="background:#0d6efd; color:white; border:none; padding:10px; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer;">
+                📩 Send Pay Notification to Customer
+              </button>
+              <button onclick="confirmPaymentAndComplete('${b.id}')" style="background:#198754; color:white; border:none; padding:10px; border-radius:6px; font-weight:bold; font-size:13px; cursor:pointer;">
+                ✅ Payment Received & Send WhatsApp Bill
+              </button>
+              <button onclick="document.getElementById('paymentModalOverlay').remove()" style="background:#dc3545; color:white; border:none; padding:8px; border-radius:6px; font-size:12px; cursor:pointer;">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+
+    function sendPayNotificationToCustomer(orderId) {
+      triggerPushNotif(orderId, "💳 Payment Requested", "Partner has finalized your bill. Please scan QR or click to pay online.");
+      alert("✓ Pay Request Notification sent successfully to Customer!");
+    }
+
+    function confirmPaymentAndComplete(orderId) {
+      const bookings = getSharedBookings();
+      const b = bookings.find(x => x.id === orderId || x.id === String(orderId));
+
+      if (b) {
+        b.status = 'COMPLETED';
+        b.isCompleted = true;
+        b.isPaid = true;
+        b.workStatus = 'Work Completed & Paid';
+        saveSharedBookings(bookings);
+
+        generatePDFBill(b);
+
+        const custMobile = b.mobile || "919000000000";
+        const finalAmt = b.reenteredAmount || b.amount;
+        const msg = `Hello ${b.userName || 'Customer'}, Thank you for using EPC Services! Your Service #${b.id} is completed successfully. Total Paid: ₹${finalAmt}. Digital Bill generated.`;
+        const waUrl = `https://api.whatsapp.com/send?phone=${custMobile}&text=${encodeURIComponent(msg)}`;
+
+        alert("🎉 Payment Confirmed! Opening WhatsApp to send Automatic PDF Bill Summary to Customer...");
+        window.open(waUrl, '_blank');
+
+        document.getElementById('paymentModalOverlay').remove();
+        if (typeof renderPartnerJobs === 'function') renderPartnerJobs();
+      }
+    }
+
+    // Duty Attendance Check-in & GPS Sync Logic
+    function setDutyOnlineStatus(isOnline) {
+      if (!currentPartner) return;
+
+      currentPartner.isOnline = isOnline;
+      const currentTime = new Date().toLocaleTimeString();
+
+      if (isOnline) {
+        currentPartner.lastLoginTime = currentTime;
+        currentPartner.lastLogoutTime = '--';
+      } else {
+        currentPartner.lastLogoutTime = currentTime;
+      }
+
+      if (isOnline && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          currentPartner.liveLat = pos.coords.latitude;
+          currentPartner.liveLng = pos.coords.longitude;
+          syncPartnerData();
+          document.getElementById('dutyStatusText').innerText = '🟢 Online & Active';
+          document.getElementById('dutyOnlineBtn').style.display = 'none';
+          document.getElementById('dutyOfflineBtn').style.display = 'inline-block';
+          alert('🟢 Duty Started! Check-in time logged & Live GPS transmitted.');
+        }, err => {
+          syncPartnerData();
+          document.getElementById('dutyStatusText').innerText = '🟢 Online (GPS Pending)';
+          document.getElementById('dutyOnlineBtn').style.display = 'none';
+          document.getElementById('dutyOfflineBtn').style.display = 'inline-block';
+          alert('🟢 Duty Started! Check-in time logged.');
+        });
+      } else {
+        syncPartnerData();
+        document.getElementById('dutyStatusText').innerText = '🔴 Offline';
+        document.getElementById('dutyOnlineBtn').style.display = 'inline-block';
+        document.getElementById('dutyOfflineBtn').style.display = 'none';
+        alert('🔴 Duty Ended! Check-out time logged: ' + currentTime);
+      }
+    }
+
+    // Leave & Permission Request Submission
+    function applyLeavePermission() {
+      const type = document.getElementById('leaveType').value;
+      const date = document.getElementById('leaveDate').value;
+      const reason = document.getElementById('leaveReason').value;
+
+      if (!date || !reason) {
+        alert('Please enter Date/Hours and Reason for Leave.');
+        return;
+      }
+
+      let leaves = JSON.parse(localStorage.getItem('epc_leave_requests') || '[]');
+      leaves.push({
+        partnerId: currentPartner.partnerId || 'PRT-1001',
+        partnerName: currentPartner.name,
+        type: type,
+        date: date,
+        reason: reason,
+        status: 'Pending',
+        createdAt: new Date().toISOString()
+      });
+
+      localStorage.setItem('epc_leave_requests', JSON.stringify(leaves));
+      alert('✉ Leave/Permission Request sent to Admin for Approval!');
+      document.getElementById('leaveDate').value = '';
+      document.getElementById('leaveReason').value = '';
+    }
+
+    function syncPartnerData() {
+      let partners = JSON.parse(localStorage.getItem('epc_registered_partners') || '[]');
+      let idx = partners.findIndex(p => p.partnerId === currentPartner.partnerId);
+      if (idx !== -1) {
+        partners[idx] = currentPartner;
+        localStorage.setItem('epc_registered_partners', JSON.stringify(partners));
+      }
+    }
+
+    // Partner Login Function Logic
+    function loginPartner(partnerIdInput, passwordInput) {
+      let partners = JSON.parse(localStorage.getItem('epc_registered_partners') || '[]');
+      let partner = partners.find(p => p.partnerId === partnerIdInput && (p.password === passwordInput || p.tempPassword === passwordInput));
+
+      if (!partner) {
+        alert('Invalid Partner ID or Password!');
+        return;
+      }
+
+      localStorage.setItem('epc_current_partner', JSON.stringify(partner));
+
+      if (partner.mustChangePassword) {
+        const modalEl = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+        modalEl.show();
+      } else {
+        alert('Login Successful!');
+        loadPartnerDashboard();
+      }
+    }
+
+    // Password Change Handler Logic
+    function submitPasswordChange() {
+      const tempPass = document.getElementById('currentTempPassword').value;
+      const newPass = document.getElementById('newPartnerPassword').value;
+      const confirmPass = document.getElementById('confirmPartnerPassword').value;
+
+      let currentPartner = JSON.parse(localStorage.getItem('epc_current_partner') || '{}');
+      let partners = JSON.parse(localStorage.getItem('epc_registered_partners') || '[]');
+
+      if (tempPass !== (currentPartner.tempPassword || currentPartner.password)) {
+        alert('Temporary Password thavaraanadhu! Correct-a enter pannaungai.');
+        return;
+      }
+
+      if (!newPass || newPass.length < 6) {
+        alert('New password minimum 6 characters irukka வேண்டும்!');
+        return;
+      }
+
+      if (newPass !== confirmPass) {
+        alert('New Password & Confirm Password match aagavillai!');
+        return;
+      }
+
+      let partnerInList = partners.find(p => p.partnerId === currentPartner.partnerId);
+      if (partnerInList) {
+        partnerInList.password = newPass;
+        partnerInList.tempPassword = newPass;
+        partnerInList.mustChangePassword = false;
+      }
+
+      currentPartner.password = newPass;
+      currentPartner.tempPassword = newPass;
+      currentPartner.mustChangePassword = false;
+
+      localStorage.setItem('epc_registered_partners', JSON.stringify(partners));
+      localStorage.setItem('epc_current_partner', JSON.stringify(currentPartner));
+
+      alert('🎉 Password successfully changed! Ungal New Password save aagiyaachu.');
+
+      const modalEl = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
+      if (modalEl) modalEl.hide();
+      
+      loadPartnerDashboard();
+    }
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+</body>
+</html>

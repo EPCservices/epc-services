@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EPC Services - Kanchipuram</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: #f4f6f9;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 30px;
+      background-color: #ffffff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      background: #0d6efd;
+      color: white;
+      font-weight: 800;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+    }
+
+    .brand-name {
+      font-size: 20px;
+      font-weight: 800;
+      color: #1a252f;
+    }
+
+    .search-location-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      max-width: 550px;
+      margin: 0 20px;
+    }
+
+    .location-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 8px 12px;
+      background: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      max-width: 220px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .search-box-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 8px 12px;
+      background: #fff;
+      flex: 1;
+    }
+
+    .search-box-header input {
+      border: none;
+      outline: none;
+      width: 100%;
+      font-size: 13px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .cart-btn-header, .bookings-btn-header, .sub-btn-header {
+      background: #f1f3f5;
+      border: 1px solid #e0e0e0;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cart-badge {
+      background: #dc3545;
+      color: white;
+      font-size: 11px;
+      font-weight: bold;
+      border-radius: 50%;
+      padding: 2px 6px;
+    }
+
+    .login-btn, .logout-btn {
+      background-color: #0d6efd;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .logout-btn { background-color: #dc3545; }
+
+    .hero-banner {
+      background: #ffffff;
+      padding: 30px 20px 20px 20px;
+      text-align: center;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .landing-carousel-wrapper {
+      max-width: 900px;
+      margin: 20px auto 10px auto;
+      padding: 0 20px;
+    }
+
+    .landing-carousel {
+      position: relative;
+      width: 100%;
+      height: 280px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .landing-carousel-slide {
+      display: flex;
+      width: 400%;
+      height: 100%;
+      transition: transform 0.6s ease-in-out;
+    }
+
+    .landing-carousel-slide img {
+      width: 25%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .dashboard-container {
+      display: none;
+      max-width: 1100px;
+      margin: 20px auto;
+      padding: 0 20px;
+      width: 100%;
+    }
+
+    .carousel-container {
+      position: relative;
+      width: 100%;
+      height: 240px;
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .carousel-slide {
+      display: flex;
+      width: 300%;
+      height: 100%;
+      transition: transform 0.6s ease-in-out;
+    }
+
+    .carousel-slide img {
+      width: 33.333%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 25px;
+    }
+
+    .sidebar {
+      background: white;
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      height: fit-content;
+    }
+
+    .sidebar h3 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: #1a252f;
+    }
+
+    .category-btn {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      background: #fff;
+      text-align: left;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .category-btn.active, .category-btn:hover {
+      background: #0d6efd;
+      color: white;
+      border-color: #0d6efd;
+    }
+
+    .services-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .service-item {
+      background: white;
+      padding: 14px;
+      border-radius: 12px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .service-item img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #f8f9fa;
+    }
+
+    .service-details { flex: 1; }
+    .service-details h4 { font-size: 15px; color: #222; margin-bottom: 3px; }
+    .service-details p { font-size: 12px; color: #666; margin-bottom: 6px; }
+    .service-price { font-size: 14px; font-weight: 700; color: #198754; }
+
+    .add-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f1f3f5;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .add-control button {
+      width: 26px;
+      height: 26px;
+      border: none;
+      background: #0d6efd;
+      color: white;
+      font-size: 15px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.55);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 15px;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 22px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 480px;
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 12px; right: 12px;
+      font-size: 20px;
+      border: none; background: none;
+      cursor: pointer; color: #666;
+    }
+
+    .input-group { margin-bottom: 12px; }
+    .input-group label { display: block; margin-bottom: 5px; font-size: 12px; font-weight: 600; }
+    .input-group input, .input-group select {
+      width: 100%; padding: 9px 11px;
+      border: 1px solid #ccc; border-radius: 6px; font-size: 13px;
+    }
+
+    .location-btn-field {
+      background: #e7f1ff; color: #0d6efd;
+      border: 1px dashed #0d6efd;
+      padding: 8px; border-radius: 6px;
+      font-size: 12px; font-weight: bold;
+      cursor: pointer; text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .bill-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; color: #555; }
+    .bill-total-row {
+      display: flex; justify-content: space-between;
+      margin-top: 10px; padding-top: 8px;
+      border-top: 1px dashed #bbb; font-weight: 800; font-size: 15px; color: #111;
+    }
+
+    .action-btn {
+      width: 100%; padding: 11px;
+      background: #198754; color: white;
+      border: none; border-radius: 6px;
+      font-weight: bold; font-size: 14px;
+      cursor: pointer; margin-top: 12px;
+    }
+
+    .booking-tabs { display: flex; gap: 8px; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+    .booking-tab-btn {
+      padding: 6px 12px; border: none; background: #eee;
+      border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;
+    }
+    .booking-tab-btn.active { background: #0d6efd; color: white; }
+
+    .booking-card {
+      border: 1px solid #e0e0e0; border-radius: 8px;
+      padding: 12px; margin-bottom: 10px; background: #fafafa;
+    }
+    .otp-badge { background: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block; margin-top: 6px; }
+
+    .live-tracking-card {
+      background: #eef6ff;
+      border: 1px solid #0d6efd;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+    .bike-icon {
+      display: inline-block;
+      animation: pulseBike 1.5s infinite alternate;
+      font-size: 16px;
+    }
+    @keyframes pulseBike {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(6px); }
+    }
+    .rating-box {
+      background: #fff8e6;
+      border: 1px solid #ffc107;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 8px;
+      text-align: center;
+    }
+    .star-select {
+      padding: 5px;
+      font-size: 14px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      margin-right: 5px;
+    }
+
+    /* Photos Grid Banner */
+    .photo-grid { display: flex; gap: 10px; margin-top: 8px; }
+    .photo-grid img { width: 50%; height: 110px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; }
+
+    /* Push Notification UI Box */
+    .push-toast {
+      position: fixed; top: 20px; right: 20px; background: #1a252f; color: white;
+      padding: 12px 18px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      display: none; z-index: 9999; animation: slideIn 0.4s ease; border-left: 5px solid #0d6efd;
+    }
+    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+  </style>
+</head>
+<body>
+
+  <!-- Instant FCM Push Notification UI Component -->
+  <div class="push-toast" id="pushToast">
+    <div style="font-weight: bold; font-size: 13px;" id="toastTitle">🔔 Notification</div>
+    <div style="font-size: 12px; color: #ddd; margin-top: 2px;" id="toastBody">Your partner update here</div>
+  </div>
+
+  <header>
+    <div class="brand-container" onclick="location.reload()">
+      <div class="brand-logo">EPC</div>
+      <div class="brand-name">EPC Services</div>
+    </div>
+
+    <div class="search-location-wrapper" id="headerSearchLocation" style="display:none;">
+      <div class="location-box" onclick="getCurrentLocation('header')">
+        📍 <span id="headerLocationText">Select Location</span> ▾
+      </div>
+      <div class="search-box-header">
+        🔍 <input type="text" id="searchInput" placeholder="Search for 'AC service, Tap repair...'" onkeyup="filterServices()">
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="sub-btn-header" id="headerSubBtn" style="display:none; background:#e7f1ff; color:#0d6efd; border-color:#0d6efd;" onclick="openSubModal()">
+        👑 Membership Pass
+      </button>
+
+      <button class="bookings-btn-header" id="headerBookingsBtn" style="display:none;" onclick="openBookingsModal()">
+        📋 My Bookings
+      </button>
+
+      <button class="cart-btn-header" id="headerCartBtn" style="display:none;" onclick="openCartModal()">
+        🛒 Cart <span class="cart-badge" id="cartCountBadge">0</span>
+      </button>
+
+      <span id="userNameDisplay" style="display:none; font-weight: bold; color:#0d6efd; font-size:13px;"></span>
+      <button class="login-btn" id="loginBtn" onclick="openModal('loginModal')">Login</button>
+      <button class="logout-btn" id="logoutBtn" style="display:none;" onclick="logoutUser()">Logout</button>
+    </div>
+  </header>
+
+  <div id="landingHero" class="hero-banner">
+    <h1 style="font-size: 32px; color: #1a252f; margin-bottom: 6px;">Home Services in Kanchipuram</h1>
+    <p style="color:#6c757d; font-size: 14px; margin-bottom: 10px;">Please Login to view and book complete AC, Electrical, Plumbing & Carpentry services.</p>
+    
+    <div class="landing-carousel-wrapper">
+      <div class="landing-carousel">
+        <div class="landing-carousel-slide" id="landingCarouselSlide">
+          <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=1200&q=80" alt="AC Service">
+          <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80" alt="Electrical Service">
+          <img src="https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=1200&q=80" alt="Plumbing Service">
+          <img src="https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=1200&q=80" alt="Carpentry Service">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-container" id="dashboard">
+    <div class="carousel-container">
+      <div class="carousel-slide" id="carouselSlide">
+        <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=1200&q=80" alt="Electrical">
+        <img src="https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=1200&q=80" alt="Plumbing">
+        <img src="https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=1200&q=80" alt="Carpentry">
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="sidebar">
+        <h3>Categories</h3>
+        <button class="category-btn active" onclick="loadCategory('AC_SERVICES', this)">❄ AC Services</button>
+        <button class="category-btn" onclick="loadCategory('ELECTRICAL', this)">⚡ Electrical</button>
+        <button class="category-btn" onclick="loadCategory('PLUMBING', this)">🚰 Plumbing</button>
+        <button class="category-btn" onclick="loadCategory('CARPENTRY', this)">🔨 Carpentry</button>
+      </div>
+
+      <div class="services-list" id="servicesContainer"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal('loginModal')">&times;</button>
+      <div id="mobileSection">
+        <h3 style="margin-bottom: 12px;">Login to EPC Services</h3>
+        <div class="input-group">
+          <label>Your Name</label>
+          <input type="text" id="userNameInput" placeholder="Enter full name">
+        </div>
+        <div class="input-group">
+          <label>Mobile Number</label>
+          <input type="tel" id="mobile" placeholder="10 digit mobile number" maxlength="10">
+        </div>
+        <button class="action-btn" onclick="sendOTP()">Send OTP</button>
+      </div>
+      <div id="otpSection" style="display:none;">
+        <h3 style="margin-bottom: 12px;">Enter Verification OTP</h3>
+        <div class="input-group">
+          <label>OTP (Use 1234 for testing)</label>
+          <input type="text" id="otp" placeholder="4-digit OTP" maxlength="4">
+        </div>
+        <button class="action-btn" onclick="verifyOTP()">Verify & Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subscription / AMC Pass Modal -->
+  <div class="modal-overlay" id="subModal">
+    <div class="modal-content" style="text-align: center;">
+      <button class="close-btn" onclick="closeModal('subModal')">&times;</button>
+      <div style="font-size: 36px; margin-bottom: 8px;">👑</div>
+      <h3 style="color:#1a252f; margin-bottom: 6px;">AMC Annual Pass</h3>
+      <p style="font-size:13px; color:#666; margin-bottom:15px;">Get 1 Year Unlimited Electrical & Plumbing Inspection with Free Priority Support!</p>
+      
+      <div style="background:#f8f9fa; border:2px dashed #0d6efd; padding:15px; border-radius:10px; margin-bottom:15px;">
+        <div style="font-size:24px; font-weight:800; color:#198754;">₹1,999 <span style="font-size:13px; color:#666; font-weight:normal;">/ Year</span></div>
+        <ul style="text-align:left; font-size:12px; color:#444; margin-top:10px; padding-left:18px; line-height:1.6;">
+          <li>⚡ Free Inspection for all Electrical Breakdowns</li>
+          <li>🚰 Free Inspection for Pipe Leaks & Drainage Blocks</li>
+          <li>🚀 Zero Visitation Charge on all bookings</li>
+          <li>📞 Priority Express Partner Dispatching</li>
+        </ul>
+      </div>
+
+      <button class="action-btn" style="background:#0d6efd;" onclick="subscribeAMC()">Buy AMC Pass Now (₹1,999)</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="cartModal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal('cartModal')">&times;</button>
+      
+      <h3 style="margin-bottom: 12px; border-bottom:1px solid #eee; padding-bottom:6px;">Your Cart Details</h3>
+      <div id="cartDetailsList" style="margin-bottom: 12px; max-height: 150px; overflow-y: auto;"></div>
+
+      <!-- Emergency Express Booking Option -->
+      <div style="background:#fff3cd; border:1px solid #ffc107; padding:10px; border-radius:8px; margin-bottom:12px; display:flex; align-items:center; justify-style:space-between;">
+        <div>
+          <div style="font-size:13px; font-weight:bold; color:#856404;">⚡ Emergency / Instant Booking</div>
+          <div style="font-size:11px; color:#856404;">Partner reaches within 30 mins (+₹149 Charge)</div>
+        </div>
+        <input type="checkbox" id="expressBookingCheck" style="width:20px; height:20px; cursor:pointer;" onchange="updateBillSummary()">
+      </div>
+
+      <h4 style="margin: 12px 0 8px 0; font-size: 14px;">Select Service Slot</h4>
+      <div class="input-group">
+        <label>Preferred Date</label>
+        <input type="date" id="slotDate">
+      </div>
+      <div class="input-group">
+        <label>Preferred Time Slot</label>
+        <select id="slotTime">
+          <option value="09:00 AM - 11:00 AM">09:00 AM - 11:00 AM</option>
+          <option value="11:00 AM - 01:00 PM">11:00 AM - 01:00 PM</option>
+          <option value="02:00 PM - 04:00 PM">02:00 PM - 04:00 PM</option>
+          <option value="04:00 PM - 06:00 PM">04:00 PM - 06:00 PM</option>
+        </select>
+      </div>
+
+      <h4 style="margin: 12px 0 8px 0; font-size: 14px;">Mention Specific Partner (Optional)</h4>
+      <div class="input-group">
+        <label>Select Preferred Partner Name</label>
+        <select id="requestedPartner">
+          <option value="">Any Available Free Partner (Auto Broadcast)</option>
+        </select>
+      </div>
+
+      <h4 style="margin: 12px 0 8px 0; font-size: 14px;">Service Address</h4>
+      <div class="location-btn-field" onclick="getCurrentLocation('cart')">📍 Use My Current GPS Location</div>
+      <div class="input-group">
+        <input type="text" id="serviceAddress" placeholder="Door No, Street Name, Landmark (Kanchipuram)">
+      </div>
+
+      <h4 style="margin: 12px 0 8px 0; font-size: 14px;">Bill Summary</h4>
+      <div style="background: #f8f9fa; padding: 10px; border-radius: 8px;">
+        <div class="bill-row"><span>Item Total</span><span>₹<span id="billItemTotal">0</span></span></div>
+        <div class="bill-row"><span>Visitation Fee</span><span>₹<span id="billVisitationFee">99</span></span></div>
+        <div class="bill-row" id="expressFeeRow" style="display:none; color:#d97706; font-weight:bold;"><span>Express Service (30 Mins)</span><span>₹149</span></div>
+        <div class="bill-row"><span>Platform fee</span><span>₹<span id="billPlatformFee">10</span></span></div>
+        <div class="bill-row"><span>Est Govt. taxes</span><span>₹<span id="billTaxes">6</span></span></div>
+        <div class="bill-total-row"><span>Total bill</span><span>₹<span id="billTotal">0</span></span></div>
+        <div class="bill-total-row" style="border-top:none; color:#198754;"><span>Amount to pay</span><span>₹<span id="billAmountToPay">0</span></span></div>
+      </div>
+
+      <h4 style="margin: 12px 0 8px 0; font-size: 14px;">Payment Gateway Mode</h4>
+      <div class="input-group">
+        <select id="paymentMethod">
+          <option value="Razorpay">Razorpay / PhonePe / Cashfree (UPI/Cards/Netbanking)</option>
+          <option value="Cash on Service">Cash After Service</option>
+        </select>
+      </div>
+
+      <button class="action-btn" onclick="confirmOrder()">Proceed to Pay</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="bookingsModal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal('bookingsModal')">&times;</button>
+      <h3 style="margin-bottom: 12px;">My Bookings</h3>
+      
+      <div class="booking-tabs">
+        <button class="booking-tab-btn active" onclick="switchBookingTab('ACTIVE', this)">Active Orders</button>
+        <button class="booking-tab-btn" onclick="switchBookingTab('COMPLETED', this)">Completed</button>
+        <button class="booking-tab-btn" onclick="switchBookingTab('CANCELLED', this)">Cancelled</button>
+      </div>
+
+      <div id="bookingListContainer" style="max-height: 350px; overflow-y: auto;"></div>
+    </div>
+  </div>
+
+  <script>
+    const categoryDesignationMap = {
+      'AC_SERVICES': 'AC Technician',
+      'ELECTRICAL': 'Electrician',
+      'PLUMBING': 'Plumber',
+      'CARPENTRY': 'Carpenter'
+    };
+
+    const mockServices = {
+      AC_SERVICES: [
+        { id: 'ac_1', title: 'Super saver packages', price: 599, desc: 'Complete power check, deep foam clean & gas check', img: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=300&q=80' },
+        { id: 'ac_2', title: 'Service', price: 499, desc: 'Detailed jet pump foam cleaning of indoor & outdoor units', img: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=300&q=80' },
+        { id: 'ac_3', title: 'Repair & gas refill', price: 1199, desc: 'Leakage identification, pressure testing & gas top-up', img: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=300&q=80' },
+        { id: 'ac_4', title: 'Installation / uninstallation', price: 799, desc: 'Secure wall mounting or complete dismantling support', img: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=300&q=80' }
+      ],
+      ELECTRICAL: [
+        { id: 'el_1', title: 'Switch & Socket', price: 120, desc: 'Switchboard repair or replacement', img: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=300&q=80' },
+        { id: 'el_2', title: 'Fan Installation / Repair', price: 150, desc: 'Ceiling or exhaust fan fitting and testing', img: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=300&q=80' },
+        { id: 'el_3', title: 'Light & Fixture Fitting', price: 100, desc: 'Tube light, bulb, and decorative lamps', img: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=300&q=80' },
+        { id: 'el_4', title: 'Wiring & Short Circuit Check', price: 250, desc: 'Line tracing and safe wire laying', img: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=300&q=80' },
+        { id: 'el_5', title: 'Doorbell & Security Device', price: 180, desc: 'Wired/wireless bell installation', img: 'https://images.unsplash.com/photo-1557597774-9d273605dfa9?auto=format&fit=crop&w=300&q=80' },
+        { id: 'el_6', title: 'MCB & Fuse Box Work', price: 300, desc: 'Circuit breaker tripping check and replacement', img: 'https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?auto=format&fit=crop&w=300&q=80' },
+        { id: 'el_7', title: 'Heavy Appliances Support', price: 350, desc: 'Geyser, washing machine point check', img: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=300&q=80' }
+      ],
+      PLUMBING: [
+        { id: 'pl_1', title: 'Tap & Mixer Fitting', price: 100, desc: 'Basin and kitchen tap replacement', img: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=300&q=80' },
+        { id: 'pl_2', title: 'Toilet Repair & Flush Tank', price: 300, desc: 'Flush valve repair and commode fixing', img: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=300&q=80' },
+        { id: 'pl_3', title: 'Bath & Shower Fitting', price: 200, desc: 'Shower head and overhead pipe alignment', img: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=300&q=80' },
+        { id: 'pl_4', title: 'Bath Accessories Installation', price: 150, desc: 'Towel hanger, soap holder, and mirrors', img: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=300&q=80' },
+        { id: 'pl_5', title: 'Basin & Sink Replacement', price: 250, desc: 'Wash basin mounting and outlet connection', img: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=300&q=80' },
+        { id: 'pl_6', title: 'Drainage & Blockage Clearing', price: 250, desc: 'Floor trap, sink block removal and cleaning', img: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=300&q=80' },
+        { id: 'pl_7', title: 'Leakage & Pipe Connections', price: 180, desc: 'PVC joint fixing and flexible hose change', img: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=300&q=80' },
+        { id: 'pl_8', title: 'Water Tank & Motor Check', price: 400, desc: 'Overhead tank cleaning support and motor line', img: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=300&q=80' }
+      ],
+      CARPENTRY: [
+        { id: 'cr_1', title: 'Cupboard & Drawer Repair', price: 200, desc: 'Hinge fixing, channel replacement and alignment', img: 'https://images.unsplash.com/photo-1581783342308-f792dbdd27c5?auto=format&fit=crop&w=300&q=80' },
+        { id: 'cr_2', title: 'Kitchen Fittings', price: 350, desc: 'Modular basket fixing and chimney alignment', img: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=300&q=80' },
+        { id: 'cr_3', title: 'Shelves & Decor Hanging', price: 150, desc: 'Wall mount shelves, photo frames and paintings', img: 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=300&q=80' },
+        { id: 'cr_4', title: 'Bath Fittings & Mirrors', price: 180, desc: 'Wooden framed mirror mounting and cabinet fix', img: 'https://images.unsplash.com/photo-1581783342308-f792dbdd27c5?auto=format&fit=crop&w=300&q=80' },
+        { id: 'cr_5', title: 'Wooden Door Lock & Hinges', price: 220, desc: 'Main door lock replacement and latch fitting', img: 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=300&q=80' },
+        { id: 'cr_6', title: 'Window & Curtain Rods', price: 160, desc: 'Curtain bracket drilling and channel installation', img: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=300&q=80' },
+        { id: 'cr_7', title: 'Furniture Repair', price: 300, desc: 'Bed tightening, chair balancing and joint pasting', img: 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=300&q=80' },
+        { id: 'cr_8', title: 'Clothes Hanger Installation', price: 150, desc: 'Ceiling or wall mounted cloth dryer stand fitting', img: 'https://images.unsplash.com/photo-1581783342308-f792dbdd27c5?auto=format&fit=crop&w=300&q=80' }
+      ]
+    };
+
+    let cart = {};
+    let currentCategory = 'AC_SERVICES';
+    let userName = '';
+    let userMobile = '';
+    let activeBookingTab = 'ACTIVE';
+    let hasAMCPass = false;
+
+    function getSharedBookings() {
+      try {
+        return JSON.parse(localStorage.getItem('epc_bookings') || '[]');
+      } catch(e) { return []; }
+    }
+
+    function saveSharedBookings(bookings) {
+      localStorage.setItem('epc_bookings', JSON.stringify(bookings));
+    }
+
+    function getRegisteredPartners() {
+      try {
+        return JSON.parse(localStorage.getItem('epc_registered_partners') || '[]');
+      } catch(e) { return []; }
+    }
+
+    let slideIndex = 0;
+    setInterval(() => {
+      slideIndex = (slideIndex + 1) % 3;
+      const slide = document.getElementById('carouselSlide');
+      if (slide) slide.style.transform = `translateX(-${slideIndex * 33.333}%)`;
+    }, 3000);
+
+    let landingSlideIndex = 0;
+    setInterval(() => {
+      landingSlideIndex = (landingSlideIndex + 1) % 4;
+      const landingSlide = document.getElementById('landingCarouselSlide');
+      if (landingSlide) landingSlide.style.transform = `translateX(-${landingSlideIndex * 25}%)`;
+    }, 3000);
+
+    // FCM Instant Push Notification Listener Simulation
+    setInterval(() => {
+      const bookings = getSharedBookings();
+      bookings.forEach(b => {
+        if (b.pushNotifPending) {
+          showPushNotification(b.pushTitle || 'EPC Service Update', b.pushBody || 'Your order status has been updated.');
+          b.pushNotifPending = false;
+          saveSharedBookings(bookings);
+        }
+      });
+    }, 2000);
+
+    function showPushNotification(title, body) {
+      const toast = document.getElementById('pushToast');
+      document.getElementById('toastTitle').innerText = '🔔 ' + title;
+      document.getElementById('toastBody').innerText = body;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 4500);
+    }
+
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function openSubModal() { openModal('subModal'); }
+
+    function subscribeAMC() {
+      hasAMCPass = true;
+      closeModal('subModal');
+      alert('🎉 Congratulations! You have successfully purchased the AMC Annual Maintenance Pass (₹1,999).\n\nEnjoy Free Inspections & Zero Visitation fees for 1 Year!');
+      document.getElementById('headerSubBtn').innerText = '👑 AMC Member (Active)';
+      document.getElementById('headerSubBtn').style.background = '#d1e7dd';
+      document.getElementById('headerSubBtn').style.color = '#0f5132';
+    }
+
+    function getCurrentLocation(target) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          const locStr = `Lat: ${position.coords.latitude.toFixed(3)}, Long: ${position.coords.longitude.toFixed(3)} (Kanchipuram)`;
+          if (target === 'cart') {
+            document.getElementById('serviceAddress').value = locStr;
+          } else {
+            document.getElementById('headerLocationText').innerText = 'Location Saved';
+          }
+        }, () => {
+          alert("GPS Permission denied or unavailable. Setting default Kanchipuram.");
+          document.getElementById('serviceAddress').value = "Main Road, Kanchipuram";
+        });
+      }
+    }
+
+    function sendOTP() {
+      const name = document.getElementById('userNameInput').value;
+      const m = document.getElementById('mobile').value;
+      if (name.trim() && m.length === 10) {
+        userName = name;
+        userMobile = m;
+        document.getElementById('mobileSection').style.display = 'none';
+        document.getElementById('otpSection').style.display = 'block';
+      } else { alert('Please enter your name and valid 10-digit mobile number'); }
+    }
+
+    function verifyOTP() {
+      const otp = document.getElementById('otp').value;
+      if (otp === '1234') {
+        closeModal('loginModal');
+        document.getElementById('landingHero').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        document.getElementById('loginBtn').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'inline';
+        document.getElementById('headerCartBtn').style.display = 'flex';
+        document.getElementById('headerBookingsBtn').style.display = 'flex';
+        document.getElementById('headerSubBtn').style.display = 'flex';
+        document.getElementById('headerSearchLocation').style.display = 'flex';
+        
+        document.getElementById('userNameDisplay').innerText = '👤 ' + userName;
+        document.getElementById('userNameDisplay').style.display = 'inline';
+        
+        loadCategory('AC_SERVICES');
+        document.getElementById('slotDate').valueAsDate = new Date();
+      } else { alert('Invalid OTP! Enter 1234'); }
+    }
+
+    function logoutUser() {
+      cart = {};
+      updateCartBadge();
+      document.getElementById('landingHero').style.display = 'block';
+      document.getElementById('dashboard').style.display = 'none';
+      document.getElementById('loginBtn').style.display = 'inline';
+      document.getElementById('logoutBtn').style.display = 'none';
+      document.getElementById('headerCartBtn').style.display = 'none';
+      document.getElementById('headerBookingsBtn').style.display = 'none';
+      document.getElementById('headerSubBtn').style.display = 'none';
+      document.getElementById('headerSearchLocation').style.display = 'none';
+      document.getElementById('userNameDisplay').style.display = 'none';
+      document.getElementById('mobileSection').style.display = 'block';
+      document.getElementById('otpSection').style.display = 'none';
+    }
+
+    function loadCategory(cat, btnElement) {
+      currentCategory = cat;
+      if(btnElement) {
+        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+        btnElement.classList.add('active');
+      }
+      renderServicesList(mockServices[cat]);
+    }
+
+    function filterServices() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const allServices = [...mockServices.AC_SERVICES, ...mockServices.ELECTRICAL, ...mockServices.PLUMBING, ...mockServices.CARPENTRY];
+      const filtered = allServices.filter(s => s.title.toLowerCase().includes(query) || s.desc.toLowerCase().includes(query));
+      renderServicesList(filtered);
+    }
+
+    function renderServicesList(list) {
+      const container = document.getElementById('servicesContainer');
+      container.innerHTML = '';
+      if(list.length === 0) {
+        container.innerHTML = '<p style="color:#888;">No matching services found.</p>';
+        return;
+      }
+      list.forEach(item => {
+        const qty = cart[item.id] ? cart[item.id].qty : 0;
+        container.innerHTML += `
+          <div class="service-item">
+            <img src="${item.img}" alt="${item.title}">
+            <div class="service-details">
+              <h4>${item.title}</h4>
+              <p>${item.desc}</p>
+              <div class="service-price">₹${item.price}</div>
+            </div>
+            <div class="add-control">
+              <button onclick="updateQty('${item.id}', -1)">-</button>
+              <span id="qty-${item.id}">${qty}</span>
+              <button onclick="updateQty('${item.id}', 1)">+</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function updateQty(id, change) {
+      const allServices = [...mockServices.AC_SERVICES, ...mockServices.ELECTRICAL, ...mockServices.PLUMBING, ...mockServices.CARPENTRY];
+      const item = allServices.find(s => s.id === id);
+
+      if (!cart[id]) {
+        if (change > 0) cart[id] = { title: item.title, price: item.price, qty: 1 };
+      } else {
+        cart[id].qty += change;
+        if (cart[id].qty <= 0) delete cart[id];
+      }
+
+      const qtyElem = document.getElementById(`qty-${id}`);
+      if (qtyElem) qtyElem.innerText = cart[id] ? cart[id].qty : 0;
+      updateCartBadge();
+    }
+
+    function updateCartBadge() {
+      let totalCount = 0;
+      Object.keys(cart).forEach(k => totalCount += cart[k].qty);
+      document.getElementById('cartCountBadge').innerText = totalCount;
+    }
+
+    function updateBillSummary() {
+      const keys = Object.keys(cart);
+      let itemTotal = 0;
+
+      keys.forEach(k => {
+        itemTotal += cart[k].price * cart[k].qty;
+      });
+
+      let visitationFee = (itemTotal > 0 && !hasAMCPass) ? 99 : 0;
+      const isExpress = document.getElementById('expressBookingCheck')?.checked;
+      const expressCharge = isExpress ? 149 : 0;
+
+      document.getElementById('expressFeeRow').style.display = isExpress ? 'flex' : 'none';
+
+      const platformFee = itemTotal > 0 ? 10 : 0;
+      const taxes = itemTotal > 0 ? Math.max(6, Math.round(itemTotal * 0.03)) : 0;
+      const grandTotal = itemTotal + visitationFee + expressCharge + platformFee + taxes;
+
+      document.getElementById('billItemTotal').innerText = itemTotal;
+      document.getElementById('billVisitationFee').innerText = visitationFee;
+      document.getElementById('billPlatformFee').innerText = platformFee;
+      document.getElementById('billTaxes').innerText = taxes;
+      document.getElementById('billTotal').innerText = grandTotal;
+      document.getElementById('billAmountToPay').innerText = grandTotal;
+    }
+
+    function openCartModal() {
+      const keys = Object.keys(cart);
+      if (keys.length === 0) { alert('Cart is empty!'); return; }
+
+      const cartList = document.getElementById('cartDetailsList');
+      cartList.innerHTML = '';
+
+      keys.forEach(k => {
+        const item = cart[k];
+        const subtotal = item.price * item.qty;
+        cartList.innerHTML += `
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
+            <span>${item.title} × ${item.qty}</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <strong>₹${subtotal}</strong>
+              <button onclick="changeCartItemQty('${k}', -1)" style="padding:2px 6px; background:#eee; border:none; cursor:pointer; border-radius:3px;">-</button>
+              <button onclick="changeCartItemQty('${k}', 1)" style="padding:2px 6px; background:#0d6efd; color:white; border:none; cursor:pointer; border-radius:3px;">+</button>
+            </div>
+          </div>
+        `;
+      });
+
+      const partnerSelect = document.getElementById('requestedPartner');
+      partnerSelect.innerHTML = '<option value="">Any Available Free Partner (Auto Broadcast)</option>';
+      const targetDesignation = categoryDesignationMap[currentCategory] || 'Electrician';
+      const partners = getRegisteredPartners();
+      const filteredPartners = partners.filter(p => p.designation === targetDesignation);
+
+      filteredPartners.forEach(p => {
+        partnerSelect.innerHTML += `<option value="${p.name}">${p.name} (${p.partnerId})</option>`;
+      });
+
+      updateBillSummary();
+      openModal('cartModal');
+    }
+
+    function changeCartItemQty(id, change) {
+      updateQty(id, change);
+      if (Object.keys(cart).length === 0) {
+        closeModal('cartModal');
+      } else {
+        openCartModal();
+      }
+    }
+
+    function confirmOrder() {
+      const address = document.getElementById('serviceAddress').value;
+      const slotDate = document.getElementById('slotDate').value;
+      const slotTime = document.getElementById('slotTime').value;
+      const requestedPartner = document.getElementById('requestedPartner').value;
+      const isExpress = document.getElementById('expressBookingCheck').checked;
+      const payMethod = document.getElementById('paymentMethod').value;
+
+      if (!address.trim()) { alert('Please enter service address.'); return; }
+
+      const startOTP = Math.floor(1000 + Math.random() * 9000);
+      const cancelOTP = Math.floor(1000 + Math.random() * 9000);
+      const amount = document.getElementById('billAmountToPay').innerText;
+      const requiredDesignation = categoryDesignationMap[currentCategory] || 'Electrician';
+
+      const bookings = getSharedBookings();
+      const newBooking = {
+        id: 'ORD' + Date.now().toString().slice(-5),
+        items: {...cart},
+        address, 
+        date: isExpress ? 'Today (Express 30 Mins)' : slotDate, 
+        time: isExpress ? 'Instant Express' : slotTime,
+        amount: parseFloat(amount), 
+        startOTP, 
+        cancelOTP, 
+        status: 'ACTIVE',
+        isExpress: isExpress,
+        payMethod: payMethod,
+        partnerReentered: false,
+        customerConfirmed: false,
+        isStarted: false,
+        requiredDesignation: requiredDesignation,
+        requestedPartner: requestedPartner || null,
+        assignedPartner: null,
+        beforePhoto: null,
+        afterPhoto: null
+      };
+
+      bookings.push(newBooking);
+      saveSharedBookings(bookings);
+
+      cart = {};
+      updateCartBadge();
+      loadCategory(currentCategory);
+      closeModal('cartModal');
+
+      alert(`🎉 Service Booked Successfully via ${payMethod}!\n\nOrder ID: #${newBooking.id}\n${isExpress ? '🚀 Express 30-Min Service Activated!' : ''}\nYour order has been routed to available partners.`);
+    }
+
+    function openBookingsModal() {
+      renderBookings();
+      openModal('bookingsModal');
+    }
+
+    function switchBookingTab(tab, btn) {
+      activeBookingTab = tab;
+      document.querySelectorAll('.booking-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderBookings();
+    }
+
+    function submitPartnerRating(orderId, partnerName) {
+      const stars = document.getElementById(`star_${orderId}`).value;
+      const comment = document.getElementById(`comment_${orderId}`).value;
+
+      let ratings = JSON.parse(localStorage.getItem('epc_partner_ratings') || '{}');
+      if (!ratings[partnerName]) {
+        ratings[partnerName] = { totalRatings: 0, ratingSum: 0, reviews: [] };
+      }
+
+      ratings[partnerName].totalRatings += 1;
+      ratings[partnerName].ratingSum += parseInt(stars);
+      ratings[partnerName].reviews.push({ orderId, stars: parseInt(stars), comment, customer: userName || 'Customer' });
+
+      localStorage.setItem('epc_partner_ratings', JSON.stringify(ratings));
+
+      const bookings = getSharedBookings();
+      const b = bookings.find(x => x.id === orderId);
+      if(b) {
+        b.isRated = true;
+        b.userRating = stars;
+        saveSharedBookings(bookings);
+      }
+
+      alert(`⭐ Thank you for rating ${partnerName} ${stars} Stars!`);
+      renderBookings();
+    }
+
+    function cancelBooking(id, cancelOTP) {
+      if (confirm('Are you sure you want to cancel this order?')) {
+        const bookings = getSharedBookings();
+        const b = bookings.find(x => x.id === id);
+        if (b) {
+          b.status = 'CANCELLED';
+          saveSharedBookings(bookings);
+          alert('Order cancelled successfully.');
+          renderBookings();
+        }
+      }
+    }
+
+    // Dynamic Digital Invoice Generation (PDF Download)
+    function downloadInvoicePDF(orderId) {
+      const bookings = getSharedBookings();
+      const b = bookings.find(x => x.id === orderId);
+      if(!b) return;
+
+      const invoiceHTML = `
+        <html>
+        <head>
+          <title>GST Invoice #${b.id}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.5; }
+            .header { text-align: center; border-bottom: 2px solid #0d6efd; padding-bottom: 10px; }
+            .details { margin: 20px 0; font-size: 14px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+            th, td { border: 1px solid #ccc; padding: 8px; text-align: left; font-size: 13px; }
+            th { background: #f2f2f2; }
+            .total { text-align: right; font-weight: bold; font-size: 16px; margin-top: 15px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h2>EPC SERVICES PRIVATE LIMITED</h2>
+            <p>GSTIN: 33AAAAA0000A1Z5 | Kanchipuram, Tamil Nadu</p>
+            <h3>TAX INVOICE / SERVICE RECEIPT</h3>
+          </div>
+          <div class="details">
+            <p><strong>Order ID:</strong> #${b.id}</p>
+            <p><strong>Customer Name:</strong> ${userName || 'Valued Customer'}</p>
+            <p><strong>Service Address:</strong> ${b.reenteredAddress || b.address}</p>
+            <p><strong>Service Date:</strong> ${b.date}</p>
+            <p><strong>Partner Assigned:</strong> ${b.assignedPartner || 'EPC Official'}</p>
+          </div>
+          <table>
+            <tr><th>Description</th><th>Qty</th><th>Amount</th></tr>
+            ${Object.values(b.items || {}).map(i => `<tr><td>${i.title}</td><td>${i.qty}</td><td>₹${i.price * i.qty}</td></tr>`).join('')}
+          </table>
+          <div class="total">Total Paid: ₹${b.reenteredAmount || b.amount}</div>
+          <hr style="margin-top:30px;">
+          <p style="text-align:center; font-size:12px; color:#777;">Thank you for choosing EPC Services Kanchipuram!</p>
+        </body>
+        </html>
+      `;
+
+      const win = window.open('', '_blank');
+      win.document.write(invoiceHTML);
+      win.document.close();
+      win.print();
+    }
+
+    function renderBookings() {
+      const container = document.getElementById('bookingListContainer');
+      const bookings = getSharedBookings();
+      container.innerHTML = '';
+
+      const filtered = bookings.filter(b => b.status === activeBookingTab);
+      if (filtered.length === 0) {
+        container.innerHTML = `<p style="color:#888; font-size:13px;">No ${activeBookingTab.toLowerCase()} orders found.</p>`;
+        return;
+      }
+
+      filtered.forEach(b => {
+        let itemsSummary = Object.values(b.items).map(i => `${i.title} (x${i.qty})`).join(', ');
+
+        let statusBox = '';
+        let liveBikeBox = '';
+        let ratingBox = '';
+        let photoGridBox = '';
+
+        if (b.beforePhoto || b.afterPhoto) {
+          photoGridBox = `
+            <div style="margin-top:10px; font-size:12px; font-weight:bold;">📸 Work Photo History (Verification):</div>
+            <div class="photo-grid">
+              ${b.beforePhoto ? `<div><p style="font-size:10px; color:#666;">Before Work</p><img src="${b.beforePhoto}"></div>` : ''}
+              ${b.afterPhoto ? `<div><p style="font-size:10px; color:#666;">After Work</p><img src="${b.afterPhoto}"></div>` : ''}
+            </div>
+          `;
+        }
+
+        if (b.status === 'ACTIVE' && b.assignedPartner) {
+          liveBikeBox = `
+            <div class="live-tracking-card">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div><strong>👷 Partner:</strong> ${b.assignedPartner}</div>
+                <div class="bike-icon">🏍️💨</div>
+              </div>
+              <div style="margin-top:4px; color:${b.isTrackingActive ? '#198754' : '#666'};">
+                ${b.isTrackingActive ? `📍 <strong>Live GPS:</strong> On the way! (Lat: ${b.liveLat ? b.liveLat.toFixed(4) : 'N/A'}, Lng: ${b.liveLng ? b.liveLng.toFixed(4) : 'N/A'})` : '🛵 Partner assigned & preparing to reach your location.'}
+              </div>
+            </div>
+          `;
+        }
+
+        if (!b.partnerReentered) {
+          statusBox = `<div style="background:#e7f1ff; color:#0d6efd; padding:6px 10px; border-radius:4px; font-size:12px; font-weight:bold; margin-top:6px;">⏳ Waiting for Partner verification...</div>`;
+        } else if (b.partnerReentered && !b.customerConfirmed) {
+          statusBox = `
+            <div style="background:#fff3cd; color:#856404; padding:8px; border-radius:6px; font-size:12px; margin-top:6px;">
+              <strong>⚠️ Partner Updated Details:</strong><br>
+              Items: ${b.reenteredWork}<br>
+              Address: ${b.reenteredAddress}<br>
+              Amount: ₹${b.reenteredAmount}
+            </div>
+            <button onclick="confirmPartnerDetails('${b.id}')" style="background:#198754; color:white; border:none; padding:8px 12px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer; margin-top:6px; width:100%;">✓ Accept & Confirm Details</button>
+          `;
+        } else if (b.customerConfirmed && !b.isStarted) {
+          statusBox = `<div class="otp-badge">🔑 Share Job Start OTP with Partner: ${b.startOTP}</div>`;
+        } else if (b.isStarted) {
+          statusBox = `<div style="background:#d1e7dd; color:#0f5132; padding:6px 10px; border-radius:4px; font-size:12px; font-weight:bold; margin-top:6px;">⚡ Work in progress by Partner!</div>`;
+        }
+
+        if (b.status === 'COMPLETED') {
+          if (!b.isRated) {
+            ratingBox = `
+              <div class="rating-box">
+                <div style="font-size:12px; font-weight:bold; margin-bottom:5px;">⭐ Rate ${b.assignedPartner || 'Partner'}'s Service:</div>
+                <div style="display:flex; justify-content:center; align-items:center; gap:5px;">
+                  <select id="star_${b.id}" class="star-select">
+                    <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+                    <option value="4">⭐⭐⭐⭐ (4/5)</option>
+                    <option value="3">⭐⭐⭐ (3/5)</option>
+                    <option value="2">⭐⭐ (2/5)</option>
+                    <option value="1">⭐ (1/5)</option>
+                  </select>
+                  <input type="text" id="comment_${b.id}" placeholder="Feedback (optional)" style="padding:4px; font-size:12px; border:1px solid #ccc; border-radius:4px;">
+                  <button onclick="submitPartnerRating('${b.id}', '${b.assignedPartner || 'Partner Demo'}')" style="background:#198754; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:12px; cursor:pointer;">Submit</button>
+                </div>
+              </div>
+            `;
+          } else {
+            ratingBox = `<div style="background:#e8f5e9; color:#2e7d32; padding:6px; border-radius:4px; font-size:12px; font-weight:bold; text-align:center; margin-top:6px;">✓ Rated ${b.userRating} Stars! Thank you for feedback.</div>`;
+          }
+        }
+
+        container.innerHTML += `
+          <div class="booking-card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+              <strong>Order ID: #${b.id} ${b.isExpress ? '⚡ [Express 30-Min]' : ''}</strong>
+              <span style="color:#198754; font-weight:bold;">₹${b.reenteredAmount || b.amount}</span>
+            </div>
+            <div style="font-size:12px; color:#555;"><strong>Items:</strong> ${b.reenteredWork || itemsSummary}</div>
+            <div style="font-size:12px; color:#555;"><strong>Date/Slot:</strong> ${b.date} | ${b.time}</div>
+            <div style="font-size:12px; color:#555;"><strong>Address:</strong> ${b.reenteredAddress || b.address}</div>
+            ${b.requestedPartner ? `<div style="font-size:12px; color:#0d6efd;"><strong>Requested Partner:</strong> ${b.requestedPartner}</div>` : ''}
+            
+            ${liveBikeBox}
+            ${statusBox}
+            ${photoGridBox}
+            ${ratingBox}
+
+            ${b.status === 'COMPLETED' ? `
+              <button onclick="downloadInvoicePDF('${b.id}')" style="background:#0d6efd; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:bold; cursor:pointer; margin-top:8px; width:100%;">📄 Download GST Invoice (PDF)</button>
+            ` : ''}
+
+            ${b.status === 'ACTIVE' ? `
+              <button onclick="cancelBooking('${b.id}',${b.cancelOTP})" style="background:#dc3545; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:11px; cursor:pointer; margin-top:8px; display:block;">Cancel Order</button>
+            ` : b.status === 'CANCELLED' ? `
+              <div class="otp-badge" style="background:#f8d7da; color:#721c24;">🚫 Order Cancelled</div>
+            ` : ''}
+          </div>
+        `;
+      });
+    }
+
+    function confirmPartnerDetails(id) {
+      const bookings = getSharedBookings();
+      const b = bookings.find(x => x.id === id);
+      if (b) {
+        b.customerConfirmed = true;
+        saveSharedBookings(bookings);
+        alert('Details confirmed! Share the OTP with Partner to start work.');
+        renderBookings();
+      }
+    }
+
+    function addTipToPartner(orderId, amount) {
+  const bookings = getSharedBookings();
+  const b = bookings.find(x => x.id === orderId);
+  if (b) {
+    b.tipAmount = (b.tipAmount || 0) + amount;
+    b.reenteredAmount = (parseFloat(b.reenteredAmount) || parseFloat(b.amount)) + amount;
+    saveSharedBookings(bookings);
+    alert(`🎉 ₹${amount} Tip added successfully for ${b.assignedPartner}!`);
+  }
+}
+
+  </script>
+</body>
+</html>

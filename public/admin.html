@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EPC Services - Admin Verification & Operations Dashboard</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <style>
+    body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .sidebar { min-height: 100vh; background-color: #1a252f; color: #fff; }
+    .sidebar .nav-link { color: #adb5bd; margin-bottom: 5px; cursor: pointer; }
+    .sidebar .nav-link.active, .sidebar .nav-link:hover { color: #fff; background-color: #0d6efd; border-radius: 5px; }
+    .card-stat { border: none; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.06); }
+    .doc-img { max-width: 100%; height: 160px; object-fit: contain; border: 1px dashed #ccc; border-radius: 8px; padding: 4px; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+    .dot-active { background-color: #198754; }
+    .dot-inactive { background-color: #dc3545; }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 sidebar p-3">
+      <h4 class="text-primary fw-bold text-center mb-4">EPC Admin</h4>
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a class="nav-link active" onclick="showSection('dashboard', this)"><i class="fas fa-chart-line me-2"></i> Dashboard Overview</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="showSection('customers', this)"><i class="fas fa-users me-2"></i> Customers List</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="showSection('partners', this)"><i class="fas fa-user-shield me-2"></i> Partner Onboarding & Approvals</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="showSection('ops-status', this)"><i class="fas fa-signal me-2"></i> Active/Inactive Status & Categories</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="showSection('gps-map', this)"><i class="fas fa-map-marker-alt me-2"></i> Partner Live GPS Map</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="showSection('attendance', this)"><i class="fas fa-calendar-check me-2"></i> Daily Attendance</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" onclick="showSection('leaves', this)"><i class="fas fa-envelope-open-text me-2"></i> Leave & Permission Approval</a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Main View -->
+    <main class="col-md-9 col-lg-10 p-4">
+      
+      <!-- Metrics Section -->
+      <div id="section-dashboard">
+        <h2 class="mb-4 fw-bold">Dashboard Overview</h2>
+        <div class="row g-3">
+          <div class="col-md-3">
+            <div class="card card-stat bg-primary text-white p-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6>Total Registered Customers</h6>
+                  <h3 id="stat-customers">0</h3>
+                </div>
+                <i class="fas fa-users fa-2x opacity-50"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card card-stat bg-success text-white p-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6>Approved Active Partners</h6>
+                  <h3 id="stat-approved-partners">0</h3>
+                </div>
+                <i class="fas fa-user-check fa-2x opacity-50"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card card-stat bg-warning text-dark p-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6>Pending Partner Requests</h6>
+                  <h3 id="stat-pending-partners">0</h3>
+                </div>
+                <i class="fas fa-clock fa-2x opacity-50"></i>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card card-stat bg-info text-white p-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6>Completed Service Orders</h6>
+                  <h3 id="stat-completed">0</h3>
+                </div>
+                <i class="fas fa-check-circle fa-2x opacity-50"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customers Section -->
+      <div id="section-customers" class="d-none">
+        <h2 class="mb-4 fw-bold">Customer Records</h2>
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Customer Name</th>
+                    <th>Email ID</th>
+                    <th>Phone</th>
+                    <th>Joined Date</th>
+                  </tr>
+                </thead>
+                <tbody id="customer-table-body">
+                  <tr><td colspan="4" class="text-center">Loading Customers Data...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Partners Section -->
+      <div id="section-partners" class="d-none">
+        <h2 class="mb-4 fw-bold">Partner Onboarding Requests</h2>
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Phone</th>
+                    <th>Email ID</th>
+                    <th>Verification Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="partner-table-body">
+                  <tr><td colspan="6" class="text-center">Loading Partner Requests...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active/Inactive Status & Categories -->
+      <div id="section-ops-status" class="d-none">
+        <h2 class="mb-4 fw-bold">Partner Operational Status & Category Metrics</h2>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <div class="card bg-success text-white p-3">
+              <h6>Active / Online Duty Partners</h6>
+              <h2 id="opsActiveCount">0</h2>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card bg-danger text-white p-3">
+              <h6>Inactive / Offline Partners</h6>
+              <h2 id="opsInactiveCount">0</h2>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card bg-primary text-white p-3">
+              <h6>Total Registered Partners</h6>
+              <h2 id="opsTotalPartnersCount">0</h2>
+            </div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm p-3">
+          <h5 class="fw-bold mb-3">Partners Breakdown by Category</h5>
+          <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+              <thead class="table-light">
+                <tr><th>Category Name</th><th>Total Partners Joined</th></tr>
+              </thead>
+              <tbody id="opsCategoryTableBody">
+                <tr><td colspan="2" class="text-center">Loading Category Data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- GPS Location View -->
+      <div id="section-gps-map" class="d-none">
+        <h2 class="mb-4 fw-bold">📍 Partner Live GPS Location Tracking</h2>
+        <div class="card shadow-sm p-3">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-dark">
+                <tr>
+                  <th>Partner Name</th>
+                  <th>Designation</th>
+                  <th>Mobile</th>
+                  <th>Live Location Coordinates</th>
+                  <th>Map View</th>
+                </tr>
+              </thead>
+              <tbody id="opsGpsTableBody">
+                <tr><td colspan="5" class="text-center">Loading Live GPS Data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attendance Section -->
+      <div id="section-attendance" class="d-none">
+        <h2 class="mb-4 fw-bold">📅 Daily Attendance Register</h2>
+        <div class="card shadow-sm p-3">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-dark">
+                <tr>
+                  <th>Partner ID</th>
+                  <th>Name</th>
+                  <th>Mobile Number</th>
+                  <th>Designation</th>
+                  <th>Duty Status</th>
+                  <th>Check-in Time</th>
+                  <th>Check-out Time</th>
+                  <th>Total Working Hours</th>
+                </tr>
+              </thead>
+              <tbody id="opsAttendanceTableBody">
+                <tr><td colspan="8" class="text-center">Loading Attendance Register...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leave & Permission Approvals -->
+      <div id="section-leaves" class="d-none">
+        <h2 class="mb-4 fw-bold">✉ Leave & Permission Requests</h2>
+        <div class="card shadow-sm p-3">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-dark">
+                <tr>
+                  <th>Partner Name & ID</th>
+                  <th>Request Type</th>
+                  <th>Reason</th>
+                  <th>Date / Hours Required</th>
+                  <th>Status</th>
+                  <th>Admin Action</th>
+                </tr>
+              </thead>
+              <tbody id="opsLeaveTableBody">
+                <tr><td colspan="6" class="text-center">Loading Leave Requests...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Partner Verification Modal -->
+<div class="modal fade" id="partnerVerifyModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">🛡️ Admin Officer Partner Document Verification</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="closeModalDirect('partnerVerifyModal')"></button>
+      </div>
+      <div class="modal-body" id="modalVerifyBody"></div>
+      <div class="modal-footer" id="modalVerifyFooter">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="closeModalDirect('partnerVerifyModal')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Partner Attendance Summary Modal -->
+<div class="modal fade" id="partnerAttendanceModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title" id="attendanceModalTitle">📊 Partner Attendance Summary</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="closeModalDirect('partnerAttendanceModal')"></button>
+      </div>
+      <div class="modal-body" id="attendanceModalBody">
+        <!-- Dynamic Content -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="closeModalDirect('partnerAttendanceModal')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let allPartnersData = [];
+
+  // Exposed globally to avoid ReferenceError
+  window.showSection = function(sectionId, el) {
+    document.querySelectorAll('main > div').forEach(div => div.classList.add('d-none'));
+    const targetSection = document.getElementById('section-' + sectionId);
+    if (targetSection) targetSection.classList.remove('d-none');
+    
+    document.querySelectorAll('.sidebar .nav-link').forEach(a => a.classList.remove('active'));
+    if (el) el.classList.add('active');
+
+    if (sectionId === 'dashboard') loadStats();
+    if (sectionId === 'customers') loadCustomers();
+    if (sectionId === 'partners') loadPartners();
+    if (sectionId === 'ops-status') loadOpsAnalytics();
+    if (sectionId === 'gps-map') loadGPSLocations();
+    if (sectionId === 'attendance') loadAttendanceLogs();
+    if (sectionId === 'leaves') loadLeaveRequests();
+  };
+
+  document.addEventListener("DOMContentLoaded", () => {
+    loadStats();
+  });
+
+  async function loadStats() {
+    let localPartners = JSON.parse(localStorage.getItem('epc_registered_partners') || '[]');
+    let localBookings = JSON.parse(localStorage.getItem('epc_bookings') || '[]');
+    let localCustomers = JSON.parse(localStorage.getItem('epc_customers') || '[]');
+
+    let approvedCount = localPartners.filter(p => p.isVerified).length;
+    let pendingCount = localPartners.filter(p => !p.isVerified).length;
+    let completedBookingsCount = localBookings.filter(b => b.status === 'COMPLETED' || b.isCompleted).length;
+    let custCount = localCustomers.length || 1;
+
+    document.getElementById('stat-approved-partners').innerText = approvedCount;
+    document.getElementById('stat-pending-partners').innerText = pendingCount;
+    document.getElementById('stat-completed').innerText = completedBookingsCount;
+    document.getElementById('stat-customers').innerText = custCount;
+
+    try {
+      const res = await fetch('/api/admin/dashboard-stats');
+      const result = await res.json();
+      if (result.success && result.data) {
+        document.getElementById('stat-customers').innerText = result.data.totalCustomers || custCount;
+        document.getElementById('stat-approved-partners').innerText = Math.max(result.data.approvedPartners || 0, approvedCount);
+        document.getElementById('stat-pending-partners').innerText = Math.max(result.data.pendingPartners || 0, pendingCount);
+        document.getElementById('stat-completed').innerText = Math.max(result.data.completedBookings || 0, completedBookingsCount);
+      }
+    } catch (err) { 
+      console.warn("Using local storage fallback stats:", err);
+    }
+  }
+
+  async function loadCustomers() {
+    try {
+      const res = await fetch('/api/admin/customers');
+      const result = await res.json();
+      const tbody = document.getElementById('customer-table-body');
+      tbody.innerHTML = '';
+
+      if (result.customers && result.customers.length > 0) {
+        result.customers.forEach(cust => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${cust.name || 'N/A'}</td>
+              <td>${cust.email || 'N/A'}</td>
+              <td>${cust.phone || 'N/A'}</td>
+              <td>${new Date(cust.createdAt).toLocaleDateString()}</td>
+            </tr>
+          `;
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center">No customers found</td></tr>';
+      }
+    } catch (err) { console.error(err); }
+  }
+
+  async function loadPartners() {
+    try {
+      const res = await fetch('/api/admin/partners');
+      const result = await res.json();
+      allPartnersData = result.partners || [];
+
+      let localPartners = JSON.parse(localStorage.getItem('epc_registered_partners') || '[]');
+      if(allPartnersData.length === 0 && localPartners.length > 0) {
+        allPartnersData = localPartners;
+      }
+
+      const tbody = document.getElementById('partner-table-body');
+      tbody.innerHTML = '';
+
+      if (allPartnersData.length > 0) {
+        allPartnersData.forEach((partner, index) => {
+          const statusBadge = partner.isVerified 
+            ? `<span class="badge bg-success">Verified & Approved</span>` 
+            : `<span class="badge bg-warning text-dark">Pending Admin Approval</span>`;
+
+          tbody.innerHTML += `
+            <tr>
+              <td><strong>${partner.name || 'N/A'}</strong></td>
+              <td>${partner.designation || partner.category || 'General'}</td>
+              <td>${partner.phone || partner.mobile || 'N/A'}</td>
+              <td>${partner.email || 'N/A'}</td>
+              <td>${statusBadge}</td>
+              <td>
+                <button class="btn btn-sm btn-primary" onclick="viewAndVerifyPartner('${partner._id || index}')">
+                  <i class="fas fa-eye me-1"></i> Review & Approve
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">No partner registration requests found</td></tr>';
+      }
+    } catch (err) { console.error(err); }
+  }
+
+  function viewAndVerifyPartner(id) {
+    const partner = allPartnersData.find(p => p._id === id || p.partnerId === id || allPartnersData.indexOf(p) == id);
+    if (!partner) return;
+
+    const modalBody = document.getElementById('modalVerifyBody');
+    const modalFooter = document.getElementById('modalVerifyFooter');
+    const docs = partner.docs || {};
+
+    let credentialsInfoHtml = `
+      <div class="col-12 mt-2">
+        <div class="alert alert-info p-3 mb-0">
+          <h6 class="fw-bold mb-1"><i class="fas fa-key me-2"></i> Partner Access Credentials</h6>
+          <div><strong>Partner User ID:</strong> <span class="badge bg-primary fs-6">${partner.partnerId || 'N/A'}</span></div>
+          <div><strong>Current Password (Admin View):</strong> <span class="badge bg-dark fs-6">${partner.password || partner.tempPassword || 'N/A'}</span></div>
+          ${partner.mustChangePassword ? '<span class="badge bg-warning text-dark mt-1">Pending Password Change by Partner</span>' : '<span class="badge bg-success mt-1">Updated by Partner</span>'}
+        </div>
+      </div>
+    `;
+
+    modalBody.innerHTML = `
+      <div class="row g-3">
+        ${credentialsInfoHtml}
+
+        <div class="col-md-6">
+          <h6 class="fw-bold text-primary"><i class="fas fa-id-card me-1"></i> Partner Profile Details</h6>
+          <p class="mb-1"><strong>Full Name:</strong> ${partner.name}</p>
+          <p class="mb-1"><strong>Phone Number:</strong> ${partner.phone || partner.mobile || 'N/A'}</p>
+          <p class="mb-1"><strong>Gmail ID:</strong> ${partner.email}</p>
+          <p class="mb-1"><strong>Designation:</strong> ${partner.designation || 'Electrician'}</p>
+          <p class="mb-1"><strong>Experience:</strong> ${partner.experience || '1-3 Years'}</p>
+          <p class="mb-1"><strong>Father Name:</strong> ${partner.fatherName || 'N/A'}</p>
+          <p class="mb-1"><strong>DOB:</strong> ${partner.dob || 'N/A'}</p>
+          <p class="mb-1"><strong>UPI ID:</strong> ${partner.upi || 'N/A'}</p>
+          <p class="mb-1"><strong>Working Address:</strong> ${partner.currAddress || 'Kanchipuram'}</p>
+        </div>
+        <div class="col-md-6 text-center">
+          <h6 class="fw-bold text-primary"><i class="fas fa-user-circle me-1"></i> Profile Photo</h6>
+          <img src="${docs.photo || 'https://via.placeholder.com/150'}" class="doc-img mb-2" alt="Profile">
+        </div>
+        
+        <hr class="my-2">
+        <h6 class="fw-bold text-primary"><i class="fas fa-folder-open me-1"></i> Verification Documents Uploaded</h6>
+        
+        <div class="col-md-4 text-center">
+          <span class="d-block fw-bold fs-7 mb-1">Aadhaar Card Copy</span>
+          <img src="${docs.aadhaar || 'https://via.placeholder.com/150'}" class="doc-img" alt="Aadhaar">
+        </div>
+
+        <div class="col-md-4 text-center">
+          <span class="d-block fw-bold fs-7 mb-1">PAN Card Copy</span>
+          <img src="${docs.pan || 'https://via.placeholder.com/150'}" class="doc-img" alt="PAN">
+        </div>
+
+        <div class="col-md-4 text-center">
+          <span class="d-block fw-bold fs-7 mb-1">Bank Passbook / Cheque</span>
+          <img src="${docs.bank || 'https://via.placeholder.com/150'}" class="doc-img" alt="Bank">
+        </div>
+      </div>
+    `;
+
+    modalFooter.innerHTML = `
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="closeModalDirect('partnerVerifyModal')">Close</button>
+      ${!partner.isVerified ? `
+        <button type="button" class="btn btn-success fw-bold" onclick="approvePartnerAction('${partner._id || partner.partnerId || id}')">
+          <i class="fas fa-check-circle me-1"></i> Approve & Send Mail Credentials
+        </button>
+      ` : `<span class="badge bg-success p-2 fw-bold"><i class="fas fa-user-check me-1"></i> Partner Approved</span>`}
+    `;
+
+    openModalDirect('partnerVerifyModal');
+  }
+
+  function sendPartnerCredentialsToEmail(partnerEmail, partnerName, partnerId, tempPassword) {
+    const templateParams = {
+      to_email: partnerEmail,
+      partner_name: partnerName,
+      partner_id: partnerId,
+      temp_password: tempPassword
+    };
+
+    emailjs.send('service_5kiof7c', 'YOUR_TEMPLATE_ID', templateParams)
+      .then(function(response) {
+         console.log('SUCCESS!', response.status, response.text);
+         alert('🎉 Partner ID & Password email-ku successfully anuppapattadhu!');
+      }, function(error) {
+         console.log('FAILED...', error);
+         alert('Email send aavathu tholviyurru: ' + JSON.stringify(error));
+      });
+  }
+
+  function loadOpsAnalytics() {
+    let partners = JSON.parse(localStorage.getItem('epc_registered_partners') || '[]');
+    let active = partners.filter(p => p.isOnline).length;
+    let inactive = partners.length - active;
+
+    document.getElementById('opsActiveCount').innerText = active;
+    document.getElementById('opsInactiveCount').innerText = inactive;
+    document.getElementById('opsTotalPartnersCount').innerText = partners.length;
+
+    let catMap = {};
+    partners.forEach(p => {
+      let desig = p.designation || 'Electrician';
+      catMap[desig] = (catMap[desig] || 0) + 1;
+    });
+
+    const tbody = document.getElementById('opsCategoryTableBody');
+    tbody.innerHTML = '';
+    if (Object.keys(catMap).length > 0) {
+      for (let cat in catMap) {
+        tbody.innerHTML += `<tr><td><strong>${cat}</strong></td><td>${catMap[cat]} Partners Joined</td></tr>`;
+      }
+    } else {
+      tbody.innerHTML = '<tr><td colspan="2" class="text-center">No partner category records found</td></tr>';
+    }
+  }
+
+  function loadGPSLocations() {
+    const tbody = document.getElementById('opsGpsTableBody');
+    tbody.innerHTML = '';
+    let partners = JSON.parse(localStorage.getItem('epc_registered_partners') || '[]');
+
+    if (partners.length > 0) {
+      partners.forEach(p => {
+        const lat = p.liveLat ? p.liveLat.toFixed(4) : '12.8342';
+        const lng = p.liveLng ? p.liveLng.toFixed(4) : '79.7036';
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${p.name}</strong></td>
+            <td>${p.designation || 'Electrician'}</td>
+            <td>${p.mobile || 'N/A'}</td>
+            <td><span class="badge bg-success">Lat: ${lat}, Lng: ${lng}</span></td>
+            <td><a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-map-marked-alt me-1"></i> View Map</a></td>
+          </tr>
+        `;
+      });
+    } else {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center">No live GPS data available</td></tr>';
+    }
+  }
+
+  function calculateWorkingHours(checkInTime, checkOutTime) {
+    if (!checkInTime || !checkOutTime || checkOutTime === '--' || checkOutTime === 'Active on Duty') return '--';
+    try {
+      const now = new Date();
+      const dateStr = now.toDateString();
+      const checkInDate = new Date(`${dateStr} ${checkInTime}`);
+      const checkOutDate = new Date(`${dateStr} ${checkOutTime}`);
+      let diffMs = checkOutDate - checkInDate;
+      if (isNaN(diffMs) || diffMs < 0) return '--';
+      let diffMins = Math.floor(diffMs / 60000);
+      let hrs = Math.floor(diffMins / 60);
+      let mins = diffMins % 60;
+      return `${hrs} hrs ${mins} mins`;
+    } catch (e) { return '--'; }
+  }
+
+  function loadAttendanceLogs() {
+    const tbody = document.getElementById('opsAttendanceTableBody');
+    tbody.innerHTML = '';
+    let partners = JSON.parse(localStorage.getItem('epc_registered_partners') || '[]');
+
+    if (partners.length > 0) {
+      partners.forEach(p => {
+        const isOnline = p.isOnline || false;
+        const statusBadge = isOnline 
+          ? '<span class="badge bg-success"><span class="status-dot dot-active"></span> Present (Duty Online)</span>' 
+          : '<span class="badge bg-secondary"><span class="status-dot dot-inactive"></span> Offline / Absent</span>';
+
+        const checkIn = p.lastLoginTime || '--';
+        const checkOut = p.lastLogoutTime && p.lastLogoutTime !== '--' ? p.lastLogoutTime : (isOnline ? 'Active on Duty' : '--');
+        const workingHours = calculateWorkingHours(checkIn, p.lastLogoutTime);
+        const pId = p.partnerId || 'PRT-1018';
+
+        tbody.innerHTML += `
+          <tr>
+            <td>
+              <button class="btn btn-link p-0 fw-bold text-primary text-decoration-underline" onclick="event.preventDefault(); showPartnerAttendanceHistory('${pId}')">
+                ${pId}
+              </button>
+            </td>
+            <td><strong>${p.name || 'Abdul Rahman'}</strong></td>
+            <td>${p.mobile || p.phone || 'N/A'}</td>
+            <td>${p.designation || 'Carpenter'}</td>
+            <td>${statusBadge}</td>
+            <td>${checkIn}</td>
+            <td>${checkOut}</td>
+            <td><span class="badge bg-info text-dark">${workingHours}</span></td>
+          </tr>
+        `;
+      });
+    } else {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center">No attendance logs found</td></tr>';
+    }
+  }
+
+  function showPartnerAttendanceHistory(partnerId) {
+    let partners = JSON.parse(localStorage.getItem('epc_registered_partners') || '[]');
+    let partner = partners.find(p => p.partnerId === partnerId) || {
+      partnerId: partnerId,
+      name: 'Abdul Rahman',
+      designation: 'Carpenter',
+      mobile: 'N/A'
+    };
+
+    let leaves = JSON.parse(localStorage.getItem('epc_leave_requests') || '[]');
+    let partnerLeaves = leaves.filter(l => l.partnerId === partnerId || l.partnerName === partner.name);
+
+    let approvedLeaves = partnerLeaves.filter(l => l.status === 'Approved' && l.type.includes('Leave')).length;
+    let approvedPermissions = partnerLeaves.filter(l => l.status === 'Approved' && l.type.includes('Permission')).length;
+    let pendingRequests = partnerLeaves.filter(l => l.status === 'Pending').length;
+
+    const modalBody = document.getElementById('attendanceModalBody');
+    document.getElementById('attendanceModalTitle').innerText = `📊 Attendance Details: ${partner.name} (${partner.partnerId})`;
+
+    let leaveHistoryRows = '';
+    if (partnerLeaves.length > 0) {
+      partnerLeaves.forEach(l => {
+        const badgeColor = l.status === 'Approved' ? 'success' : (l.status === 'Rejected' ? 'danger' : 'warning');
+        leaveHistoryRows += `
+          <tr>
+            <td>${l.type}</td>
+            <td>${l.date}</td>
+            <td>${l.reason}</td>
+            <td><span class="badge bg-${badgeColor}">${l.status}</span></td>
+          </tr>
+        `;
+      });
+    } else {
+      leaveHistoryRows = '<tr><td colspan="4" class="text-center text-muted">No leave or permission requests found.</td></tr>';
+    }
+
+    modalBody.innerHTML = `
+      <div class="row g-3 mb-4">
+        <div class="col-md-3">
+          <div class="card bg-success text-white p-3 text-center">
+            <h6>Present Days</h6>
+            <h4>${partner.isOnline ? '1 Day (Today Active)' : '1 Day'}</h4>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-danger text-white p-3 text-center">
+            <h6>Approved Leaves</h6>
+            <h4>${approvedLeaves}</h4>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-info text-white p-3 text-center">
+            <h6>Permissions Taken</h6>
+            <h4>${approvedPermissions}</h4>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-warning text-dark p-3 text-center">
+            <h6>Pending Requests</h6>
+            <h4>${pendingRequests}</h4>
+          </div>
+        </div>
+      </div>
+
+      <h6 class="fw-bold mb-2 text-primary"><i class="fas fa-list me-1"></i> Leave & Permission Request History</h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Type</th>
+              <th>Date / Hours</th>
+              <th>Reason</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${leaveHistoryRows}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    openModalDirect('partnerAttendanceModal');
+  }
+
+  function loadLeaveRequests() {
+    const tbody = document.getElementById('opsLeaveTableBody');
+    tbody.innerHTML = '';
+    let leaves = JSON.parse(localStorage.getItem('epc_leave_requests') || '[]');
+
+    if (leaves.length > 0) {
+      leaves.forEach((l, idx) => {
+        const badgeColor = l.status === 'Approved' ? 'success' : l.status === 'Rejected' ? 'danger' : 'warning';
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${l.partnerName}</strong> (${l.partnerId})</td>
+            <td><span class="badge bg-info text-dark">${l.type}</span></td>
+            <td>${l.reason}</td>
+            <td>${l.date}</td>
+            <td><span class="badge bg-${badgeColor}">${l.status}</span></td>
+            <td>
+              ${l.status === 'Pending' ? `
+                <button class="btn btn-sm btn-success me-1" onclick="processLeaveAction(${idx}, 'Approved')"><i class="fas fa-check me-1"></i> Approve</button>
+                <button class="btn btn-sm btn-danger" onclick="processLeaveAction(${idx}, 'Rejected')"><i class="fas fa-times me-1"></i> Reject</button>
+              ` : '<span class="text-muted fw-bold">Processed</span>'}
+            </td>
+          </tr>
+        `;
+      });
+    } else {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center">No leave or permission requests submitted</td></tr>';
+    }
+  }
+
+  function processLeaveAction(idx, statusStr) {
+    let leaves = JSON.parse(localStorage.getItem('epc_leave_requests') || '[]');
+    if (leaves[idx]) {
+      leaves[idx].status = statusStr;
+      localStorage.setItem('epc_leave_requests', JSON.stringify(leaves));
+      alert(`Leave Request ${statusStr} successfully!`);
+      loadLeaveRequests();
+    }
+  }
+
+  function openModalDirect(modalId) {
+    const el = document.getElementById(modalId);
+    if (!el) return;
+    if (window.bootstrap && window.bootstrap.Modal) {
+      const modalInst = window.bootstrap.Modal.getInstance(el) || new window.bootstrap.Modal(el);
+      modalInst.show();
+    } else {
+      el.style.display = 'block';
+      el.classList.add('show');
+      document.body.classList.add('modal-open');
+    }
+  }
+
+  function closeModalDirect(modalId) {
+    const el = document.getElementById(modalId);
+    if (!el) return;
+    if (window.bootstrap && window.bootstrap.Modal) {
+      const modalInst = window.bootstrap.Modal.getInstance(el);
+      if (modalInst) modalInst.hide();
+    }
+    el.style.display = 'none';
+    el.classList.remove('show');
+    document.body.classList.remove('modal-open');
+  }
+
+  async function approvePartnerAction(partnerId) {
+    let partners = JSON.parse(localStorage.getItem('epc_registered_partners') || '[]');
+    let partner = partners.find(p => p.partnerId === partnerId || p.id === partnerId || p._id === partnerId);
+
+    if (!partner) {
+      alert('Partner details not found!');
+      return;
+    }
+
+    if (!partner.partnerId) {
+      partner.partnerId = 'PRT-' + Math.floor(1000 + Math.random() * 9000);
+    }
+
+    const tempPassword = 'Temp' + Math.floor(100000 + Math.random() * 900000);
+    partner.tempPassword = tempPassword;
+    partner.password = tempPassword; 
+    partner.isVerified = true;
+    partner.mustChangePassword = true; 
+
+    localStorage.setItem('epc_registered_partners', JSON.stringify(partners));
+
+    try {
+      const templateParams = {
+        to_email: partner.email,
+        partner_name: partner.name,
+        partner_id: partner.partnerId,
+        temp_password: tempPassword
+      };
+
+      await emailjs.send('service_5kiof7c', 'YOUR_TEMPLATE_ID', templateParams);
+      alert(`🎉 Partner Approved Successfully!\nPartner ID: ${partner.partnerId}\nTemporary Password Email-ku anuppapattadhu!`);
+    } catch (err) {
+      console.warn('Mail notification info:', err);
+      alert(`🎉 Partner Approved!\nPartner ID: ${partner.partnerId}\nTemp Password: ${tempPassword}`);
+    }
+
+    if (typeof loadPartners === 'function') loadPartners();
+    if (typeof loadStats === 'function') loadStats();
+  }
+</script>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script type="text/javascript">
+   (function(){
+      emailjs.init("bKmvjb7OBk9QAG0FG");
+   })();
+</script>
+
+</body>
+</html>
