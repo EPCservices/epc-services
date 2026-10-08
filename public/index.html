@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EPC Services - Kanchipuram</title>
+  
+  <!-- Leaflet CSS for Live Tracking Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
   <style>
     * {
       box-sizing: border-box;
@@ -407,6 +411,21 @@
       margin-right: 5px;
     }
 
+    /* Leaflet Map Specific Styling */
+    #map, #leafletMapContainer {
+      height: 300px;
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+    .status-card {
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      font-size: 13px;
+    }
+
     /* Photos Grid Banner */
     .photo-grid { display: flex; gap: 10px; margin-top: 8px; }
     .photo-grid img { width: 50%; height: 110px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; }
@@ -556,7 +575,7 @@
       <div id="cartDetailsList" style="margin-bottom: 12px; max-height: 150px; overflow-y: auto;"></div>
 
       <!-- Emergency Express Booking Option -->
-      <div style="background:#fff3cd; border:1px solid #ffc107; padding:10px; border-radius:8px; margin-bottom:12px; display:flex; align-items:center; justify-style:space-between;">
+      <div style="background:#fff3cd; border:1px solid #ffc107; padding:10px; border-radius:8px; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
         <div>
           <div style="font-size:13px; font-weight:bold; color:#856404;">⚡ Emergency / Instant Booking</div>
           <div style="font-size:11px; color:#856404;">Partner reaches within 30 mins (+₹149 Charge)</div>
@@ -631,6 +650,37 @@
     </div>
   </div>
 
+  <!-- Live Tracking Map Modal -->
+  <div class="modal-overlay" id="trackingModal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal('trackingModal')">&times;</button>
+      <h3 style="margin-bottom: 12px;">Partner Live Tracking</h3>
+      
+      <div id="map"></div>
+      
+      <div class="status-card">
+        <h4 id="status-title" style="color: #0d6efd; margin-bottom: 4px;">Partner is on the way...</h4>
+        <p id="location-text" style="color: #666; font-size: 12px;">Waiting for location update...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dynamic Map Modal for openLiveTrackingMap -->
+  <div class="modal-overlay" id="mapModal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal('mapModal')">&times;</button>
+      <h3 style="margin-bottom: 12px;" id="mapModalTitle">Partner Live GPS Location</h3>
+      <div id="leafletMapContainer"></div>
+      <div class="status-card">
+        <p style="color: #666; font-size: 12px;">Real-time GPS status connected.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Socket.io & Leaflet JS Libraries -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <script>
     const categoryDesignationMap = {
       'AC_SERVICES': 'AC Technician',
@@ -683,6 +733,25 @@
     let userMobile = '';
     let activeBookingTab = 'ACTIVE';
     let hasAMCPass = false;
+
+    // Socket & Leaflet Tracking Variables
+    let socket = null;
+    let map = null;
+    let partnerMarker = null;
+
+    try {
+      if (typeof io !== 'undefined') {
+        socket = io();
+      }
+    } catch(e) {
+      console.log('Socket.io server connection pending...');
+    }
+
+    const partnerIcon = L.icon({
+      iconUrl: 'https://cdn-icons-png.flaticon.com/512/3097/3097180.png',
+      iconSize: [40, 40],
+      iconAnchor: [20, 20]
+    });
 
     function getSharedBookings() {
       try {
@@ -737,6 +806,41 @@
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function openSubModal() { openModal('subModal'); }
+
+    function openLiveTrackingModal(orderId) {
+      openModal('trackingModal');
+      
+      setTimeout(() => {
+        if (!map) {
+          map = L.map('map').setView([12.8387, 79.7016], 14);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+          }).addTo(map);
+        } else {
+          map.invalidateSize();
+        }
+
+        if (socket) {
+          socket.emit('join-order-room', orderId);
+
+          socket.on('live-location-update', (data) => {
+            const { lat, lng, updatedAt } = data;
+
+            document.getElementById('location-text').innerText = 
+              `Last updated: ${new Date(updatedAt).toLocaleTimeString()}`;
+
+            if (!partnerMarker) {
+              partnerMarker = L.marker([lat, lng], { icon: partnerIcon }).addTo(map);
+              map.setView([lat, lng], 16);
+            } else {
+              partnerMarker.setLatLng([lat, lng]);
+              map.panTo([lat, lng]);
+            }
+          });
+        }
+      }, 300);
+    }
 
     function subscribeAMC() {
       hasAMCPass = true;
@@ -1128,14 +1232,25 @@
         }
 
         if (b.status === 'ACTIVE' && b.assignedPartner) {
+          const partnerLat = b.lat || '12.8407';
+          const partnerLng = b.lng || '79.6984';
+          const partnerNameEsc = (b.assignedPartner || 'Partner').replace(/'/g, "\\'");
+          
           liveBikeBox = `
             <div class="live-tracking-card">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div><strong>👷 Partner:</strong> ${b.assignedPartner}</div>
                 <div class="bike-icon">🏍️💨</div>
               </div>
-              <div style="margin-top:4px; color:${b.isTrackingActive ? '#198754' : '#666'};">
-                ${b.isTrackingActive ? `📍 <strong>Live GPS:</strong> On the way! (Lat: ${b.liveLat ? b.liveLat.toFixed(4) : 'N/A'}, Lng: ${b.liveLng ? b.liveLng.toFixed(4) : 'N/A'})` : '🛵 Partner assigned & preparing to reach your location.'}
+              <div class="p-2 bg-blue-50 text-blue-700 text-xs rounded mt-2 border border-blue-200 flex justify-between items-center cursor-pointer hover:bg-blue-100 transition-all"
+                   onclick="openLiveTrackingMap('${partnerLat}', '${partnerLng}', '${partnerNameEsc}', '${b.id}')"
+                   style="cursor: pointer; background: #e7f1ff; padding: 8px; border-radius: 6px; margin-top: 6px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <span style="font-weight: bold; color: #0d6efd;">📍 Live GPS:</span> On the way! (Lat: ${partnerLat}, Lng: ${partnerLng})
+                </div>
+                <button style="background: #0d6efd; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">
+                  🗺️ Track on Map
+                </button>
               </div>
             </div>
           `;
@@ -1203,7 +1318,7 @@
             ` : ''}
 
             ${b.status === 'ACTIVE' ? `
-              <button onclick="cancelBooking('${b.id}',${b.cancelOTP})" style="background:#dc3545; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:11px; cursor:pointer; margin-top:8px; display:block;">Cancel Order</button>
+              <button onclick="cancelBooking('${b.id}',${b.cancelOTP})" style="background:#dc3545; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:11px; cursor:cursor; margin-top:8px; display:block;">Cancel Order</button>
             ` : b.status === 'CANCELLED' ? `
               <div class="otp-badge" style="background:#f8d7da; color:#721c24;">🚫 Order Cancelled</div>
             ` : ''}
@@ -1224,16 +1339,56 @@
     }
 
     function addTipToPartner(orderId, amount) {
-  const bookings = getSharedBookings();
-  const b = bookings.find(x => x.id === orderId);
-  if (b) {
-    b.tipAmount = (b.tipAmount || 0) + amount;
-    b.reenteredAmount = (parseFloat(b.reenteredAmount) || parseFloat(b.amount)) + amount;
-    saveSharedBookings(bookings);
-    alert(`🎉 ₹${amount} Tip added successfully for ${b.assignedPartner}!`);
-  }
-}
+      const bookings = getSharedBookings();
+      const b = bookings.find(x => x.id === orderId);
+      if (b) {
+        b.tipAmount = (b.tipAmount || 0) + amount;
+        b.reenteredAmount = (parseFloat(b.reenteredAmount) || parseFloat(b.amount)) + amount;
+        saveSharedBookings(bookings);
+        alert(`🎉 ₹${amount} Tip added successfully for ${b.assignedPartner}!`);
+      }
+    }
 
+    // Function to open Live Tracking Map Modal
+    function openLiveTrackingMap(lat, lng, partnerName, orderId) {
+      openModal('mapModal');
+
+      setTimeout(() => {
+        if (!window.liveMap) {
+          window.liveMap = L.map('leafletMapContainer').setView([parseFloat(lat), parseFloat(lng)], 14);
+
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+          }).addTo(window.liveMap);
+
+          window.partnerMarker = L.marker([parseFloat(lat), parseFloat(lng)]).addTo(window.liveMap)
+            .bindPopup(`<b>${partnerName}</b><br>On the way to your location!`)
+            .openPopup();
+        } else {
+          window.liveMap.invalidateSize();
+          window.liveMap.setView([parseFloat(lat), parseFloat(lng)], 14);
+          if (window.partnerMarker) {
+            window.partnerMarker.setLatLng([parseFloat(lat), parseFloat(lng)]);
+            window.partnerMarker.getPopup().setContent(`<b>${partnerName}</b><br>On the way to your location!`);
+          }
+        }
+
+        // Socket.io Listener for Real-Time Location Updates
+        if (typeof socket !== 'undefined' && socket) {
+          if (orderId) {
+            socket.emit('join-order-room', orderId);
+          }
+          socket.off('partnerLocationUpdate');
+          socket.on('partnerLocationUpdate', (data) => {
+            if (data && data.lat && data.lng) {
+              const newLatLng = new L.LatLng(data.lat, data.lng);
+              if (window.partnerMarker) window.partnerMarker.setLatLng(newLatLng);
+              if (window.liveMap) window.liveMap.panTo(newLatLng);
+            }
+          });
+        }
+      }, 300);
+    }
   </script>
 </body>
 </html>

@@ -14,7 +14,39 @@ const bookingRoutes = require('./routes/bookingRoutes');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST']
+  }
+});
+
+// Socket.io connection logic
+io.on('connection', (socket) => {
+  console.log('Client connected:', socket.id);
+
+  // Customer or Partner joins specific order room
+  socket.on('join-order-room', (orderId) => {
+    socket.join(`order_${orderId}`);
+    console.log(`Socket ${socket.id} joined room: order_${orderId}`);
+  });
+
+  // Partner sends live GPS coordinates
+  socket.on('update-partner-location', (data) => {
+    const { orderId, lat, lng } = data;
+    
+    // Broadcast location to all listeners in this order room (Customer app)
+    io.to(`order_${orderId}`).emit('live-location-update', {
+      lat,
+      lng,
+      updatedAt: new Date()
+    });
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected:', socket.id);
+  });
+});
 
 // Database Connection
 connectDB();

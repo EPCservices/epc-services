@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Live Tracking</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body, html {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    /* Map container full screen */
+    #map {
+      height: 100vh;
+      width: 100vw;
+      z-index: 1;
+    }
+
+    /* Bottom Sheet Container */
+    .bottom-sheet {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: #ffffff;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      padding: 20px;
+      box-shadow: 0px -4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Status Header */
+    .status-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+
+    .status-highlight {
+      color: #0b8a3e;
+    }
+
+    .sub-text {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 16px;
+    }
+
+    /* OTP Box */
+    .otp-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8f9fa;
+      border: 1px dashed #cccccc;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+    }
+
+    .otp-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #444;
+    }
+
+    .otp-code {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 4px;
+      color: #000;
+    }
+
+    /* Partner Details Card */
+    .partner-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid #eeeeee;
+      padding-top: 14px;
+    }
+
+    .partner-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .partner-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #e0e0e0;
+      object-fit: cover;
+    }
+
+    .partner-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #222;
+    }
+
+    .vehicle-no {
+      font-size: 13px;
+      color: #777;
+    }
+
+    .call-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Full Screen Map -->
+  <div id="map"></div>
+
+  <!-- Bottom Sheet Overlay -->
+  <div class="bottom-sheet">
+    <div class="status-title">
+      Arriving in <span class="status-highlight">-- mins</span>
+    </div>
+    <div class="sub-text">Partner location loading...</div>
+
+    <!-- OTP Display -->
+    <div class="otp-container">
+      <span class="otp-label">Start your order with OTP</span>
+      <span class="otp-code">----</span>
+    </div>
+
+    <!-- Partner Info -->
+    <div class="partner-card">
+      <div class="partner-info">
+        <img class="partner-avatar" src="https://via.placeholder.com/48" alt="Partner">
+        <div>
+          <div class="partner-name">Loading...</div>
+          <div class="vehicle-no">Service</div>
+        </div>
+      </div>
+      <button class="call-btn" onclick="callPartner()">Call</button>
+    </div>
+  </div>
+
+  <!-- Leaflet JS for Map -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // 1. Initialize Map
+    const map = L.map('map', { zoomControl: false }).setView([12.8407, 79.6984], 14);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+    }).addTo(map);
+
+    // Initial Markers
+    let partnerMarker = L.marker([12.8407, 79.6984]).addTo(map);
+    let customerMarker = L.circleMarker([12.8330, 79.6990], { color: 'blue', radius: 8 }).addTo(map);
+    let partnerPhone = '';
+
+    // 2. Extract Order ID from URL Query Params
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('orderId');
+
+    // 3. Fetch Order & Partner Details from Backend
+    async function fetchOrderDetails() {
+      if (!orderId) return;
+
+      try {
+        const res = await fetch(`/api/orders/${orderId}`);
+        const data = await res.json();
+        
+        // Dynamic UI Updates
+        document.querySelector('.otp-code').innerText = data.otp;
+        document.querySelector('.partner-name').innerText = data.partnerName;
+        document.querySelector('.vehicle-no').innerText = data.serviceType;
+        partnerPhone = data.partnerPhone;
+
+        // Set customer location if available
+        if (data.customerLat && data.customerLng) {
+          customerMarker.setLatLng([data.customerLat, data.customerLng]);
+        }
+      } catch (err) {
+        console.error('Error fetching order details:', err);
+      }
+    }
+
+    // 4. Fetch Live Partner Location via Polling (Every 5 seconds)
+    async function updateLiveLocation() {
+    if (!orderId) return;
+
+    try {
+      const res = await fetch(`/api/orders/${orderId}/location`);
+      const loc = await res.json();
+
+      if (loc.partnerLat && loc.partnerLng) {
+        partnerMarker.setLatLng([loc.partnerLat, loc.partnerLng]);
+        map.panTo([loc.partnerLat, loc.partnerLng]);
+      }
+
+      if (loc.time) document.querySelector('.status-highlight').innerText = loc.time;
+      if (loc.dist) document.querySelector('.sub-text').innerText = `Partner is ${loc.dist} away`;
+    } catch (err) {
+      console.error('Error updating live location:', err);
+    }
+  }
+
+  // Initial call on page load
+  updateLiveLocation();
+
+  // HERE: 5 Seconds-ku oru murai repeat aaga add panni irukkom
+  setInterval(updateLiveLocation, 5000);
+</script>
+</body>
+</html>
