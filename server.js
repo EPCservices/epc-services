@@ -151,13 +151,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-const io = new Server(server, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
-  },
-  transports: ['websocket', 'polling'] // Dynamic connection fallback
-});
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
