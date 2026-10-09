@@ -9,6 +9,17 @@
   <!-- Socket.io Client Library -->
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <style>
+
+    @media (max-width: 600px) {
+  .metrics-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .modal-content {
+    width: 95% !important;
+    padding: 15px !important;
+  }
+}
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
     body { background: #f4f6f9; color: #333; min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 70px; }
     
