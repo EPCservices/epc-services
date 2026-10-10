@@ -3,36 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EPC Services - Kanchipuram</title>
+  <title>EPC Services - Tamil Nadu Statewide</title>
   
   <!-- Leaflet CSS for Live Tracking Map -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <style>
-
     /* Mobile view optimization */
-@media (max-width: 768px) {
-  header {
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px;
-  }
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
+      }
 
-  .search-location-wrapper {
-    width: 100%;
-    max-width: 100% !important;
-    margin: 0 !important;
-    flex-direction: column;
-  }
+      .search-location-wrapper {
+        width: 100%;
+        max-width: 100% !important;
+        margin: 0 !important;
+        flex-direction: column;
+      }
 
-  .main-content {
-    grid-template-columns: 1fr !important; /* Sidebar & Service List stacked vertically */
-  }
+      .main-content {
+        grid-template-columns: 1fr !important;
+      }
 
-  .landing-carousel {
-    height: 180px !important;
-  }
-}
+      .landing-carousel {
+        height: 180px !important;
+      }
+    }
     * {
       box-sizing: border-box;
       margin: 0;
@@ -106,7 +105,7 @@
       font-size: 13px;
       cursor: pointer;
       white-space: nowrap;
-      max-width: 220px;
+      max-width: 240px;
       overflow: hidden;
       text-overflow: ellipsis;
     }
@@ -435,7 +434,6 @@
       margin-right: 5px;
     }
 
-    /* Leaflet Map Specific Styling */
     #map, #leafletMapContainer {
       height: 300px;
       width: 100%;
@@ -450,11 +448,9 @@
       font-size: 13px;
     }
 
-    /* Photos Grid Banner */
     .photo-grid { display: flex; gap: 10px; margin-top: 8px; }
     .photo-grid img { width: 50%; height: 110px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; }
 
-    /* Push Notification UI Box */
     .push-toast {
       position: fixed; top: 20px; right: 20px; background: #1a252f; color: white;
       padding: 12px 18px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
@@ -478,8 +474,20 @@
     </div>
 
     <div class="search-location-wrapper" id="headerSearchLocation" style="display:none;">
-      <div class="location-box" onclick="getCurrentLocation('header')">
-        📍 <span id="headerLocationText">Select Location</span> ▾
+      <div class="location-box">
+        📍 
+        <select id="districtSelect" onchange="onDistrictChange(this.value)" style="border:none; outline:none; font-weight:bold; background:transparent; width: 100%; cursor: pointer;">
+          <option value="Chennai">Chennai</option>
+          <option value="Coimbatore">Coimbatore</option>
+          <option value="Madurai">Madurai</option>
+          <option value="Tiruchirappalli">Tiruchirappalli</option>
+          <option value="Salem">Salem</option>
+          <option value="Kanchipuram" selected>Kanchipuram</option>
+          <option value="Tirunelveli">Tirunelveli</option>
+          <option value="Vellore">Vellore</option>
+          <option value="Erode">Erode</option>
+          <option value="Thanjavur">Thanjavur</option>
+        </select>
       </div>
       <div class="search-box-header">
         🔍 <input type="text" id="searchInput" placeholder="Search for 'AC service, Tap repair...'" onkeyup="filterServices()">
@@ -506,7 +514,7 @@
   </header>
 
   <div id="landingHero" class="hero-banner">
-    <h1 style="font-size: 32px; color: #1a252f; margin-bottom: 6px;">Home Services in Kanchipuram</h1>
+    <h1 style="font-size: 32px; color: #1a252f; margin-bottom: 6px;">Home Services across Tamil Nadu</h1>
     <p style="color:#6c757d; font-size: 14px; margin-bottom: 10px;">Please Login to view and book complete AC, Electrical, Plumbing & Carpentry services.</p>
     
     <div class="landing-carousel-wrapper">
@@ -633,7 +641,7 @@
       <h4 style="margin: 12px 0 8px 0; font-size: 14px;">Service Address</h4>
       <div class="location-btn-field" onclick="getCurrentLocation('cart')">📍 Use My Current GPS Location</div>
       <div class="input-group">
-        <input type="text" id="serviceAddress" placeholder="Door No, Street Name, Landmark (Kanchipuram)">
+        <input type="text" id="serviceAddress" placeholder="Door No, Street Name, Landmark">
       </div>
 
       <h4 style="margin: 12px 0 8px 0; font-size: 14px;">Bill Summary</h4>
@@ -755,10 +763,10 @@
     let currentCategory = 'AC_SERVICES';
     let userName = '';
     let userMobile = '';
+    let selectedDistrict = 'Kanchipuram';
     let activeBookingTab = 'ACTIVE';
     let hasAMCPass = false;
 
-    // Socket & Leaflet Tracking Variables
     let socket = null;
     let map = null;
     let partnerMarker = null;
@@ -776,6 +784,14 @@
       iconSize: [40, 40],
       iconAnchor: [20, 20]
     });
+
+    function onDistrictChange(district) {
+      selectedDistrict = district;
+      if (socket) {
+        socket.emit('join-district-room', district);
+      }
+      console.log("Switched district to:", district);
+    }
 
     function getSharedBookings() {
       try {
@@ -807,7 +823,6 @@
       if (landingSlide) landingSlide.style.transform = `translateX(-${landingSlideIndex * 25}%)`;
     }, 3000);
 
-    // FCM Instant Push Notification Listener Simulation
     setInterval(() => {
       const bookings = getSharedBookings();
       bookings.forEach(b => {
@@ -831,41 +846,6 @@
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function openSubModal() { openModal('subModal'); }
 
-    function openLiveTrackingModal(orderId) {
-      openModal('trackingModal');
-      
-      setTimeout(() => {
-        if (!map) {
-          map = L.map('map').setView([12.8387, 79.7016], 14);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap'
-          }).addTo(map);
-        } else {
-          map.invalidateSize();
-        }
-
-        if (socket) {
-          socket.emit('join-order-room', orderId);
-
-          socket.on('live-location-update', (data) => {
-            const { lat, lng, updatedAt } = data;
-
-            document.getElementById('location-text').innerText = 
-              `Last updated: ${new Date(updatedAt).toLocaleTimeString()}`;
-
-            if (!partnerMarker) {
-              partnerMarker = L.marker([lat, lng], { icon: partnerIcon }).addTo(map);
-              map.setView([lat, lng], 16);
-            } else {
-              partnerMarker.setLatLng([lat, lng]);
-              map.panTo([lat, lng]);
-            }
-          });
-        }
-      }, 300);
-    }
-
     function subscribeAMC() {
       hasAMCPass = true;
       closeModal('subModal');
@@ -878,15 +858,15 @@
     function getCurrentLocation(target) {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
-          const locStr = `Lat: ${position.coords.latitude.toFixed(3)}, Long: ${position.coords.longitude.toFixed(3)} (Kanchipuram)`;
+          const locStr = `Lat: ${position.coords.latitude.toFixed(3)}, Long: ${position.coords.longitude.toFixed(3)} (${selectedDistrict})`;
           if (target === 'cart') {
             document.getElementById('serviceAddress').value = locStr;
           } else {
-            document.getElementById('headerLocationText').innerText = 'Location Saved';
+            document.getElementById('headerLocationText').innerText = selectedDistrict;
           }
         }, () => {
-          alert("GPS Permission denied or unavailable. Setting default Kanchipuram.");
-          document.getElementById('serviceAddress').value = "Main Road, Kanchipuram";
+          alert("GPS Permission denied or unavailable. Setting default " + selectedDistrict);
+          document.getElementById('serviceAddress').value = "Main Road, " + selectedDistrict;
         });
       }
     }
@@ -917,6 +897,10 @@
         
         document.getElementById('userNameDisplay').innerText = '👤 ' + userName;
         document.getElementById('userNameDisplay').style.display = 'inline';
+
+        if (socket) {
+          socket.emit('join-district-room', selectedDistrict);
+        }
         
         loadCategory('AC_SERVICES');
         document.getElementById('slotDate').valueAsDate = new Date();
@@ -1095,6 +1079,7 @@
         id: 'ORD' + Date.now().toString().slice(-5),
         items: {...cart},
         address, 
+        district: selectedDistrict,
         date: isExpress ? 'Today (Express 30 Mins)' : slotDate, 
         time: isExpress ? 'Instant Express' : slotTime,
         amount: parseFloat(amount), 
@@ -1116,12 +1101,16 @@
       bookings.push(newBooking);
       saveSharedBookings(bookings);
 
+      if (socket) {
+        socket.emit('create-booking', newBooking);
+      }
+
       cart = {};
       updateCartBadge();
       loadCategory(currentCategory);
       closeModal('cartModal');
 
-      alert(`🎉 Service Booked Successfully via ${payMethod}!\n\nOrder ID: #${newBooking.id}\n${isExpress ? '🚀 Express 30-Min Service Activated!' : ''}\nYour order has been routed to available partners.`);
+      alert(`🎉 Service Booked Successfully in ${selectedDistrict} via ${payMethod}!\n\nOrder ID: #${newBooking.id}\n${isExpress ? '🚀 Express 30-Min Service Activated!' : ''}\nYour order has been routed to available partners.`);
     }
 
     function openBookingsModal() {
@@ -1176,7 +1165,6 @@
       }
     }
 
-    // Dynamic Digital Invoice Generation (PDF Download)
     function downloadInvoicePDF(orderId) {
       const bookings = getSharedBookings();
       const b = bookings.find(x => x.id === orderId);
@@ -1199,13 +1187,13 @@
         <body>
           <div class="header">
             <h2>EPC SERVICES PRIVATE LIMITED</h2>
-            <p>GSTIN: 33AAAAA0000A1Z5 | Kanchipuram, Tamil Nadu</p>
+            <p>GSTIN: 33AAAAA0000A1Z5 | Tamil Nadu</p>
             <h3>TAX INVOICE / SERVICE RECEIPT</h3>
           </div>
           <div class="details">
             <p><strong>Order ID:</strong> #${b.id}</p>
             <p><strong>Customer Name:</strong> ${userName || 'Valued Customer'}</p>
-            <p><strong>Service Address:</strong> ${b.reenteredAddress || b.address}</p>
+            <p><strong>Service Address:</strong> ${b.reenteredAddress || b.address} (${b.district || 'Tamil Nadu'})</p>
             <p><strong>Service Date:</strong> ${b.date}</p>
             <p><strong>Partner Assigned:</strong> ${b.assignedPartner || 'EPC Official'}</p>
           </div>
@@ -1215,7 +1203,7 @@
           </table>
           <div class="total">Total Paid: ₹${b.reenteredAmount || b.amount}</div>
           <hr style="margin-top:30px;">
-          <p style="text-align:center; font-size:12px; color:#777;">Thank you for choosing EPC Services Kanchipuram!</p>
+          <p style="text-align:center; font-size:12px; color:#777;">Thank you for choosing EPC Services Tamil Nadu!</p>
         </body>
         </html>
       `;
@@ -1256,8 +1244,8 @@
         }
 
         if (b.status === 'ACTIVE' && b.assignedPartner) {
-          const partnerLat = b.lat || '12.8407';
-          const partnerLng = b.lng || '79.6984';
+          const partnerLat = b.lat || '13.0827';
+          const partnerLng = b.lng || '80.2707';
           const partnerNameEsc = (b.assignedPartner || 'Partner').replace(/'/g, "\\'");
           
           liveBikeBox = `
@@ -1266,11 +1254,10 @@
                 <div><strong>👷 Partner:</strong> ${b.assignedPartner}</div>
                 <div class="bike-icon">🏍️💨</div>
               </div>
-              <div class="p-2 bg-blue-50 text-blue-700 text-xs rounded mt-2 border border-blue-200 flex justify-between items-center cursor-pointer hover:bg-blue-100 transition-all"
-                   onclick="openLiveTrackingMap('${partnerLat}', '${partnerLng}', '${partnerNameEsc}', '${b.id}')"
+              <div onclick="openLiveTrackingMap('${partnerLat}', '${partnerLng}', '${partnerNameEsc}', '${b.id}')"
                    style="cursor: pointer; background: #e7f1ff; padding: 8px; border-radius: 6px; margin-top: 6px; display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                  <span style="font-weight: bold; color: #0d6efd;">📍 Live GPS:</span> On the way! (Lat: ${partnerLat}, Lng: ${partnerLng})
+                  <span style="font-weight: bold; color: #0d6efd;">📍 Live GPS:</span> On the way!
                 </div>
                 <button style="background: #0d6efd; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">
                   🗺️ Track on Map
@@ -1324,13 +1311,12 @@
         container.innerHTML += `
           <div class="booking-card">
             <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-              <strong>Order ID: #${b.id} ${b.isExpress ? '⚡ [Express 30-Min]' : ''}</strong>
+              <strong>Order ID: #${b.id} (${b.district || 'Tamil Nadu'}) ${b.isExpress ? '⚡ [Express 30-Min]' : ''}</strong>
               <span style="color:#198754; font-weight:bold;">₹${b.reenteredAmount || b.amount}</span>
             </div>
             <div style="font-size:12px; color:#555;"><strong>Items:</strong> ${b.reenteredWork || itemsSummary}</div>
             <div style="font-size:12px; color:#555;"><strong>Date/Slot:</strong> ${b.date} | ${b.time}</div>
             <div style="font-size:12px; color:#555;"><strong>Address:</strong> ${b.reenteredAddress || b.address}</div>
-            ${b.requestedPartner ? `<div style="font-size:12px; color:#0d6efd;"><strong>Requested Partner:</strong> ${b.requestedPartner}</div>` : ''}
             
             ${liveBikeBox}
             ${statusBox}
@@ -1342,9 +1328,7 @@
             ` : ''}
 
             ${b.status === 'ACTIVE' ? `
-              <button onclick="cancelBooking('${b.id}',${b.cancelOTP})" style="background:#dc3545; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:11px; cursor:cursor; margin-top:8px; display:block;">Cancel Order</button>
-            ` : b.status === 'CANCELLED' ? `
-              <div class="otp-badge" style="background:#f8d7da; color:#721c24;">🚫 Order Cancelled</div>
+              <button onclick="cancelBooking('${b.id}',${b.cancelOTP})" style="background:#dc3545; color:white; border:none; padding:5px 10px; border-radius:4px; font-size:11px; cursor:pointer; margin-top:8px; display:block;">Cancel Order</button>
             ` : ''}
           </div>
         `;
@@ -1362,54 +1346,26 @@
       }
     }
 
-    function addTipToPartner(orderId, amount) {
-      const bookings = getSharedBookings();
-      const b = bookings.find(x => x.id === orderId);
-      if (b) {
-        b.tipAmount = (b.tipAmount || 0) + amount;
-        b.reenteredAmount = (parseFloat(b.reenteredAmount) || parseFloat(b.amount)) + amount;
-        saveSharedBookings(bookings);
-        alert(`🎉 ₹${amount} Tip added successfully for ${b.assignedPartner}!`);
-      }
-    }
-
-    // Function to open Live Tracking Map Modal
     function openLiveTrackingMap(lat, lng, partnerName, orderId) {
       openModal('mapModal');
 
       setTimeout(() => {
         if (!window.liveMap) {
-          window.liveMap = L.map('leafletMapContainer').setView([parseFloat(lat), parseFloat(lng)], 14);
+          window.liveMap = L.map('leafletMapConnection').setView([parseFloat(lat), parseFloat(lng)], 14);
 
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
           }).addTo(window.liveMap);
 
           window.partnerMarker = L.marker([parseFloat(lat), parseFloat(lng)]).addTo(window.liveMap)
-            .bindPopup(`<b>${partnerName}</b><br>On the way to your location!`)
+            .bindPopup(`<b>${partnerName}</b><br>On the way!`)
             .openPopup();
         } else {
           window.liveMap.invalidateSize();
           window.liveMap.setView([parseFloat(lat), parseFloat(lng)], 14);
           if (window.partnerMarker) {
             window.partnerMarker.setLatLng([parseFloat(lat), parseFloat(lng)]);
-            window.partnerMarker.getPopup().setContent(`<b>${partnerName}</b><br>On the way to your location!`);
           }
-        }
-
-        // Socket.io Listener for Real-Time Location Updates
-        if (typeof socket !== 'undefined' && socket) {
-          if (orderId) {
-            socket.emit('join-order-room', orderId);
-          }
-          socket.off('partnerLocationUpdate');
-          socket.on('partnerLocationUpdate', (data) => {
-            if (data && data.lat && data.lng) {
-              const newLatLng = new L.LatLng(data.lat, data.lng);
-              if (window.partnerMarker) window.partnerMarker.setLatLng(newLatLng);
-              if (window.liveMap) window.liveMap.panTo(newLatLng);
-            }
-          });
         }
       }, 300);
     }

@@ -151,6 +151,24 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// Partner or Customer Specific District Room Join
+socket.on('join-district-room', (district) => {
+  socket.join(`district_${district}`);
+  console.log(`Socket ${socket.id} joined district room: district_${district}`);
+});
+
+// New Order Broadcast only to target District Partners
+app.post('/api/bookings/create', async (req, res) => {
+  const { customerId, district, serviceType, amount } = req.body;
+  
+  io.to(`district_${district}`).emit('new-booking-broadcast', {
+    district,
+    serviceType,
+    amount
+  });
+  
+  res.json({ success: true, message: 'Order broadcasted to district partners!' });
+});
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {

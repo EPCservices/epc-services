@@ -57,11 +57,20 @@
       display: flex; justify-content: space-between; align-items: center;
     }
 
-    .bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 60px;
-      background: #ffffff; border-top: 1px solid #ddd;
-      display: flex; justify-around: align-items: center; z-index: 1000;
-    }
+    /* Fixed CSS for .bottom-nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: #ffffff;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+}
     .nav-item {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       font-size: 11px; color: #666; cursor: pointer; width: 20%; text-decoration: none;
@@ -1834,6 +1843,23 @@ function onPartnerRegisterSubmit(formData) {
   localStorage.setItem('epc_registered_partners', JSON.stringify(existingPartners));
 
   alert("Registration Successful! Pending Admin Approval.");
+}
+
+function previewDocument(input, previewId) {
+  const file = input.files[0];
+  if (file) {
+    // Large files-ah compress panni base64 maattuvadhukku
+    compressImage(file, 300, 0.4).then(compressedBase64 => {
+      const prev = document.getElementById(previewId);
+      prev.src = compressedBase64;
+      prev.style.display = 'block';
+
+      if(previewId === 'photoPreview') uploadedDocData.photo = compressedBase64;
+      if(previewId === 'aadhaarPreview') uploadedDocData.aadhaar = compressedBase64;
+      if(previewId === 'panPreview') uploadedDocData.pan = compressedBase64;
+      if(previewId === 'bankPreview') uploadedDocData.bank = compressedBase64;
+    });
+  }
 }
   </script>
 
